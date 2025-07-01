@@ -13,45 +13,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
     <style>
-        /* Custom styles */
-        .auth-container {
-            max-width: 450px;
-            margin: 50px auto;
-            padding: 40px;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 24px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .auth-tab.active {
-            color: #d4af37;
-            border-bottom-color: #d4af37;
-            font-weight: 500;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
         
         .btn {
             display: inline-flex;
@@ -63,7 +26,6 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            text-decoration: none;
             border: none;
             gap: 8px;
         }
@@ -102,21 +64,6 @@
         .btn-danger {
             background: #dc2626;
             color: white;
-            border: 1px solid #dc2626;
-        }
-        
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-        
-        .btn-success {
-            background: #10b981;
-            color: white;
-            border: 1px solid #10b981;
-        }
-        
-        .btn-success:hover {
-            background: #059669;
         }
         
         .form-input {
@@ -125,7 +72,6 @@
             border: 1px solid #d1d5db;
             border-radius: 6px;
             font-size: 0.875rem;
-            transition: all 0.2s;
         }
         
         .form-input:focus {
@@ -199,71 +145,6 @@
             color: #6b7280;
         }
         
-        .badge-admin {
-            background: #d4af37;
-            color: white;
-        }
-        
-        .badge-modo {
-            background: #10b981;
-            color: white;
-        }
-        
-        .user-info {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .logs {
-            background: #fffbea;
-            border: 1px solid #d4af37;
-            border-radius: 6px;
-            padding: 16px;
-            font-family: monospace;
-            font-size: 0.875rem;
-            color: #6b5e00;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .log-entry {
-            margin-bottom: 12px;
-            padding: 8px;
-            background: rgba(212, 175, 55, 0.1);
-            border-radius: 4px;
-            border-left: 3px solid #d4af37;
-        }
-        
-        .user-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-        
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .user-item:last-child {
-            border-bottom: none;
-        }
-        
-        .user-item:hover {
-            background: #f9fafb;
-        }
-        
         .grid {
             display: grid;
             gap: 16px;
@@ -297,26 +178,10 @@
             }
         }
         
-        .loading-spinner {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #d4af37;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .channel-item {
             display: flex;
             align-items: center;
-            padding: 8px 12px;
+            padding: 12px;
             margin: 4px 0;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
@@ -334,37 +199,25 @@
             color: white;
             border-color: #d4af37;
         }
-
-        .channel-type {
-            margin-right: 8px;
-            font-size: 1.2em;
-        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Loading Screen -->
     <div id="loadingScreen" class="min-h-screen flex items-center justify-center">
         <div class="text-center">
-            <div class="loading-spinner mx-auto mb-4"></div>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4"></div>
             <p class="text-gray-600">Chargement...</p>
         </div>
     </div>
 
     <!-- Auth Screen -->
-    <div id="authScreen" class="auth-container hidden">
+    <div id="authScreen" class="max-w-md mx-auto mt-20 p-8 bg-white rounded-lg shadow-lg hidden">
         <div class="text-center mb-8">
             <div class="text-4xl mb-4">🔐</div>
             <h1 class="text-2xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
-            <p class="text-gray-600">Connexion ou inscription requise</p>
+            <p class="text-gray-600">Connexion requise</p>
         </div>
 
-        <!-- Auth Tabs -->
-        <div class="auth-tabs">
-            <div class="auth-tab active" data-tab="login">Connexion</div>
-            <div class="auth-tab" data-tab="register">Inscription</div>
-        </div>
-
-        <!-- Login Form -->
         <form id="loginForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -383,38 +236,13 @@
             </button>
         </form>
 
-        <!-- Register Form -->
-        <form id="registerForm" class="space-y-4 hidden">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input type="email" id="registerEmail" class="form-input" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                <input type="password" id="registerPassword" class="form-input" minlength="6" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
-                <input type="password" id="registerPasswordConfirm" class="form-input" minlength="6" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Pseudo Discord</label>
-                <input type="text" id="registerDiscordPseudo" class="form-input" placeholder="VotrePseudo#1234" required>
-                <p class="text-xs text-gray-500 mt-1">⚠️ Votre pseudo Discord doit être autorisé par un modérateur</p>
-            </div>
-            <button type="submit" class="btn btn-primary w-full">
-                📝 S'inscrire
-            </button>
-        </form>
-
         <div id="authError" class="alert alert-error hidden"></div>
-        <div id="authSuccess" class="alert alert-success hidden"></div>
     </div>
 
     <!-- Main Panel -->
     <div id="mainPanel" class="max-w-6xl mx-auto p-6 space-y-8 hidden">
         <!-- User Info -->
-        <div class="user-info">
+        <div class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div class="text-2xl">👤</div>
                 <div>
@@ -422,52 +250,15 @@
                     <div class="text-sm text-gray-500" id="userDiscord"></div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span id="adminBadge" class="badge badge-admin hidden">Admin</span>
-                <span id="modoBadge" class="badge badge-modo hidden">Modérateur</span>
-                <button id="logoutBtn" class="btn btn-danger">
-                    🚪 Déconnexion
-                </button>
-            </div>
+            <button id="logoutBtn" class="btn btn-danger">
+                🚪 Déconnexion
+            </button>
         </div>
 
         <!-- Header -->
         <div class="text-center">
             <h1 class="text-4xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
             <p class="text-gray-600 mb-4">Panneau d'administration</p>
-            <button id="testBtn" class="btn btn-success">
-                🔧 Tester la connexion
-            </button>
-        </div>
-
-        <!-- Authorized Users Management -->
-        <div id="authorizedUsersSection" class="card hidden">
-            <div class="card-header">
-                <h2 class="card-title">👥 Gestion des utilisateurs autorisés</h2>
-                <p class="card-description">Gérer la liste des pseudos Discord autorisés</p>
-            </div>
-            <div class="card-content">
-                <div class="flex space-x-2 mb-4">
-                    <input type="text" id="newUserPseudo" class="form-input flex-1" placeholder="Pseudo Discord (ex: User#1234)">
-                    <button id="addUserBtn" class="btn btn-success">
-                        ➕ Ajouter
-                    </button>
-                </div>
-                <div id="authorizedUsersList" class="user-list">
-                    <div class="p-5 text-center text-gray-500">Chargement des utilisateurs autorisés...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Logs Section -->
-        <div id="logsSection" class="card hidden">
-            <div class="card-header">
-                <h2 class="card-title">📋 Logs des actions</h2>
-                <p class="card-description">Historique des actions effectuées</p>
-            </div>
-            <div class="card-content">
-                <div id="logs" class="logs">Chargement des logs...</div>
-            </div>
         </div>
 
         <!-- Back Button -->
@@ -547,23 +338,57 @@
             </div>
         </div>
 
-        <!-- Server and Channel Selection -->
-        <div id="serverChannelView" class="card hidden">
+        <!-- Channel Selection -->
+        <div id="channelView" class="card hidden">
             <div class="card-header">
                 <h2 class="card-title">4. Choisissez un salon Discord</h2>
-                <p class="card-description">Sélectionnez le serveur et le salon où envoyer le contenu</p>
+                <p class="card-description">Sélectionnez le salon où envoyer le contenu</p>
             </div>
             <div class="card-content space-y-4">
-                <button id="loadAllServersBtn" class="btn btn-primary w-full">
-                    🔍 Charger tous les serveurs et salons disponibles
-                </button>
-                
-                <div id="serverChannelError" class="alert alert-error hidden"></div>
-                
-                <!-- Liste des serveurs et salons -->
-                <div id="serverChannelsList" class="hidden">
-                    <div class="space-y-4 max-h-96 overflow-y-auto">
-                        <!-- Les serveurs et salons seront chargés ici -->
+                <div class="space-y-2">
+                    <div class="channel-item" data-channel="1378679774742056974" data-name="Grille de lumière">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Grille de lumière</span>
+                    </div>
+                    <div class="channel-item" data-channel="1378680922928320653" data-name="Éclaireurs">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Éclaireurs</span>
+                    </div>
+                    <div class="channel-item" data-channel="1325922071473295411" data-name="Entre frères et soeurs en christ">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Entre frères et soeurs en christ</span>
+                    </div>
+                    <div class="channel-item" data-channel="1365417738436087909" data-name="Je préfères G1">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Je préfères G1</span>
+                    </div>
+                    <div class="channel-item" data-channel="1365417832774635540" data-name="Je préfères G2">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Je préfères G2</span>
+                    </div>
+                    <div class="channel-item" data-channel="1369042309966073856" data-name="Savoir chrétien G1">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Savoir chrétien G1</span>
+                    </div>
+                    <div class="channel-item" data-channel="1369042329393954887" data-name="Savoir chrétien G2">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Savoir chrétien G2</span>
+                    </div>
+                    <div class="channel-item" data-channel="1369042347492380693" data-name="Savoir chrétien G3">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Savoir chrétien G3</span>
+                    </div>
+                    <div class="channel-item" data-channel="1325922077454110731" data-name="Carnet chretien">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Carnet chretien</span>
+                    </div>
+                    <div class="channel-item" data-channel="1325922087143080056" data-name="Loue avec ton art">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Loue avec ton art</span>
+                    </div>
+                    <div class="channel-item" data-channel="1325922084739612794" data-name="Chaîne sacrée">
+                        <span class="mr-3">#</span>
+                        <span class="flex-1">Chaîne sacrée</span>
                     </div>
                 </div>
                 
@@ -571,30 +396,7 @@
                     📤 Envoyer au bot Discord
                 </button>
                 <div id="sendError" class="alert alert-error hidden"></div>
-            </div>
-        </div>
-
-        <!-- Token Configuration -->
-        <div id="tokenConfigView" class="card">
-            <div class="card-header">
-                <h2 class="card-title">🔑 Configuration du Token Discord</h2>
-                <p class="card-description">Entrez le token de votre bot Discord pour accéder aux serveurs</p>
-            </div>
-            <div class="card-content space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Token du Bot Discord</label>
-                    <input type="password" id="botTokenInput" class="form-input" placeholder="Votre token de bot Discord">
-                    <p class="text-xs text-gray-500 mt-1">
-                        📋 Comment obtenir votre token : 
-                        <a href="https://discord.com/developers/applications" target="_blank" class="text-blue-600 underline">
-                            Discord Developer Portal
-                        </a> → Votre App → Bot → Token
-                    </p>
-                </div>
-                <button id="saveTokenBtn" class="btn btn-primary w-full">
-                    💾 Sauvegarder le Token
-                </button>
-                <div id="tokenStatus" class="text-center text-sm hidden"></div>
+                <div id="sendSuccess" class="alert alert-success hidden"></div>
             </div>
         </div>
 
@@ -602,7 +404,6 @@
         <div class="flex flex-wrap gap-2 justify-center">
             <span id="categoryBadge" class="badge badge-inactive">Catégorie: Non sélectionnée</span>
             <span id="weekBadge" class="badge badge-inactive">Option: Non sélectionnée</span>
-            <span id="serverBadge" class="badge badge-inactive">Serveur: Non sélectionné</span>
             <span id="channelBadge" class="badge badge-inactive">Salon: Non sélectionné</span>
         </div>
     </div>
@@ -626,39 +427,19 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Configuration
-const ADMIN_EMAILS = [
-    "guylann.couvri@gmail.com",
-    "cineustaci@gmail.com",
-    "elyna933@gmail.com"
-];
-
-const MODO_EMAILS = [
-    "modo1@example.com",
-    "modo2@example.com"
-];
-
-// ⚠️ Le token sera demandé à l'utilisateur
-let BOT_TOKEN = '';
-
 // Variables globales
 let currentUser = null;
 let userDiscordPseudo = '';
-let isAdmin = false;
-let isModo = false;
 let currentView = 'main';
 let selectedCategory = '';
 let selectedGame = '';
 let selectedWeek = '';
 let selectedChannel = '';
 let selectedChannelName = '';
-let selectedServerId = '';
-let selectedServerName = '';
 let selectedImage = '';
 let isLoading = false;
-let availableChannels = [];
 
-// Données des catégories COMPLÈTES
+// Données des catégories
 const categories = {
     mondeEnDeclin: {
         title: "Le Monde en Déclin",
@@ -824,32 +605,15 @@ const elements = {
     authScreen: document.getElementById('authScreen'),
     mainPanel: document.getElementById('mainPanel'),
     loginForm: document.getElementById('loginForm'),
-    registerForm: document.getElementById('registerForm'),
     authError: document.getElementById('authError'),
-    authSuccess: document.getElementById('authSuccess'),
     userEmail: document.getElementById('userEmail'),
     userDiscord: document.getElementById('userDiscord'),
-    adminBadge: document.getElementById('adminBadge'),
-    modoBadge: document.getElementById('modoBadge'),
     logoutBtn: document.getElementById('logoutBtn'),
-    logsSection: document.getElementById('logsSection'),
-    authorizedUsersSection: document.getElementById('authorizedUsersSection'),
-    authorizedUsersList: document.getElementById('authorizedUsersList'),
-    newUserPseudo: document.getElementById('newUserPseudo'),
-    addUserBtn: document.getElementById('addUserBtn'),
     mainView: document.getElementById('mainView'),
     gamesView: document.getElementById('gamesView'),
     weekView: document.getElementById('weekView'),
     previewView: document.getElementById('previewView'),
-    serverChannelView: document.getElementById('serverChannelView'),
-    loadAllServersBtn: document.getElementById('loadAllServersBtn'),
-    serverChannelError: document.getElementById('serverChannelError'),
-    serverChannelsList: document.getElementById('serverChannelsList'),
-    serverIdInput: document.getElementById('serverIdInput'),
-    loadServerBtn: document.getElementById('loadServerBtn'),
-    serverError: document.getElementById('serverError'),
     channelView: document.getElementById('channelView'),
-    channelsList: document.getElementById('channelsList'),
     backBtn: document.getElementById('backBtn'),
     categorySelect: document.getElementById('categorySelect'),
     weekButtons: document.getElementById('weekButtons'),
@@ -857,49 +621,26 @@ const elements = {
     previewImage: document.getElementById('previewImage'),
     sendBtn: document.getElementById('sendBtn'),
     sendError: document.getElementById('sendError'),
-    testBtn: document.getElementById('testBtn'),
-    logs: document.getElementById('logs'),
+    sendSuccess: document.getElementById('sendSuccess'),
     categoryBadge: document.getElementById('categoryBadge'),
     weekBadge: document.getElementById('weekBadge'),
-    serverBadge: document.getElementById('serverBadge'),
-    channelBadge: document.getElementById('channelBadge'),
-    botTokenInput: document.getElementById('botTokenInput'),
-    saveTokenBtn: document.getElementById('saveTokenBtn'),
-    tokenStatus: document.getElementById('tokenStatus')
+    channelBadge: document.getElementById('channelBadge')
 };
 
 // Fonctions utilitaires
 function showElement(element) {
-    if (element) {
-        element.classList.remove('hidden');
-    }
+    if (element) element.classList.remove('hidden');
 }
 
 function hideElement(element) {
-    if (element) {
-        element.classList.add('hidden');
-    }
+    if (element) element.classList.add('hidden');
 }
 
 function showError(message) {
     if (elements.authError) {
         elements.authError.textContent = message;
         showElement(elements.authError);
-        hideElement(elements.authSuccess);
     }
-}
-
-function showSuccess(message) {
-    if (elements.authSuccess) {
-        elements.authSuccess.textContent = message;
-        showElement(elements.authSuccess);
-        hideElement(elements.authError);
-    }
-}
-
-function clearMessages() {
-    hideElement(elements.authError);
-    hideElement(elements.authSuccess);
 }
 
 function showAuthScreen() {
@@ -919,42 +660,13 @@ function showMainPanel() {
     if (elements.userDiscord) {
         elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
     }
-
-    if (isAdmin) {
-        showElement(elements.adminBadge);
-        hideElement(elements.modoBadge);
-        showElement(elements.logsSection);
-        showElement(elements.authorizedUsersSection);
-        loadLogs();
-        loadAuthorizedUsers();
-    } else if (isModo) {
-        hideElement(elements.adminBadge);
-        showElement(elements.modoBadge);
-        showElement(elements.logsSection);
-        showElement(elements.authorizedUsersSection);
-        loadLogs();
-        loadAuthorizedUsers();
-    } else {
-        hideElement(elements.adminBadge);
-        hideElement(elements.modoBadge);
-        hideElement(elements.logsSection);
-        hideElement(elements.authorizedUsersSection);
-    }
 }
 
-function checkUserRole(email) {
-    const isAdminUser = ADMIN_EMAILS.includes(email);
-    const isModoUser = MODO_EMAILS.includes(email);
-    return { isAdmin: isAdminUser, isModo: isModoUser };
-}
-
-// Fonctions de gestion du panel principal
 function hideAllViews() {
     hideElement(elements.mainView);
     hideElement(elements.gamesView);
     hideElement(elements.weekView);
     hideElement(elements.previewView);
-    hideElement(elements.serverChannelView);
     hideElement(elements.channelView);
 }
 
@@ -980,11 +692,8 @@ function resetSelection() {
     selectedWeek = '';
     selectedChannel = '';
     selectedChannelName = '';
-    selectedServerId = '';
-    selectedServerName = '';
     selectedImage = '';
     hideElement(elements.previewView);
-    hideElement(elements.serverChannelView);
     hideElement(elements.channelView);
     updateBadges();
     updateSendButton();
@@ -998,15 +707,12 @@ function updateBadges() {
     elements.weekBadge.textContent = `Option: ${selectedWeek || 'Non sélectionnée'}`;
     elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
 
-    elements.serverBadge.textContent = `Serveur: ${selectedServerName || 'Non sélectionné'}`;
-    elements.serverBadge.className = `badge ${selectedServerId ? 'badge-active' : 'badge-inactive'}`;
-
     elements.channelBadge.textContent = `Salon: ${selectedChannelName || 'Non sélectionné'}`;
     elements.channelBadge.className = `badge ${selectedChannel ? 'badge-active' : 'badge-inactive'}`;
 }
 
 function updateSendButton() {
-    const canSend = selectedImage && selectedChannel && selectedServerId && !isLoading;
+    const canSend = selectedImage && selectedChannel && !isLoading;
     elements.sendBtn.disabled = !canSend;
     elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer au bot Discord';
 }
@@ -1062,246 +768,48 @@ function selectWeek(week, imageUrl) {
 
     elements.previewImage.src = imageUrl;
     showElement(elements.previewView);
-    showElement(elements.serverChannelView); // Changé ici
+    showElement(elements.channelView);
     updateBadges();
     updateSendButton();
-}
-
-// Fonction pour charger les salons d'un serveur
-async function loadAllServersAndChannels() {
-    // Vérifier si le token est configuré
-    if (!BOT_TOKEN) {
-        elements.serverChannelError.textContent = '❌ Veuillez d\'abord configurer votre token Discord ci-dessus';
-        showElement(elements.serverChannelError);
-        return;
-    }
-
-    elements.loadAllServersBtn.disabled = true;
-    elements.loadAllServersBtn.innerHTML = '🔄 Chargement en cours...';
-    hideElement(elements.serverChannelError);
-
-    try {
-        console.log('🔍 Récupération de tous les serveurs...');
-        
-        // Test du token d'abord
-        const testResponse = await fetch('https://discord.com/api/v10/users/@me', {
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-            }
-        });
-
-        if (!testResponse.ok) {
-            if (testResponse.status === 401) {
-                throw new Error('Token invalide ou expiré. Vérifiez votre token Discord.');
-            }
-            throw new Error(`Erreur d'authentification: ${testResponse.status}`);
-        }
-
-        // Récupérer tous les serveurs où le bot est présent
-        const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-            }
-        });
-
-        if (!guildsResponse.ok) {
-            throw new Error(`Erreur lors de la récupération des serveurs: ${guildsResponse.status}`);
-        }
-
-        const guilds = await guildsResponse.json();
-        console.log(`✅ ${guilds.length} serveurs trouvés`);
-
-        const serverChannelsList = document.getElementById('serverChannelsList');
-        serverChannelsList.innerHTML = '';
-
-        // Pour chaque serveur, récupérer ses salons
-        for (const guild of guilds) {
-            try {
-                console.log(`📡 Chargement des salons pour: ${guild.name}`);
-                
-                const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${guild.id}/channels`, {
-                    headers: {
-                        'Authorization': `Bot ${BOT_TOKEN}`,
-                    }
-                });
-
-                if (!channelsResponse.ok) {
-                    console.warn(`⚠️ Impossible de charger les salons pour ${guild.name}: ${channelsResponse.status}`);
-                    continue;
-                }
-
-                const channels = await channelsResponse.json();
-                
-                // Filtrer seulement les salons texte
-                const textChannels = channels.filter(channel => 
-                    channel.type === 0 || channel.type === 5 || channel.type === 11
-                ).sort((a, b) => a.name.localeCompare(b.name));
-
-                if (textChannels.length > 0) {
-                    createServerSection(guild, textChannels, serverChannelsList);
-                }
-
-            } catch (error) {
-                console.error(`❌ Erreur pour le serveur ${guild.name}:`, error);
-            }
-        }
-
-        showElement(elements.serverChannelsList);
-        console.log('✅ Chargement terminé');
-
-    } catch (error) {
-        console.error('❌ Erreur générale:', error);
-        elements.serverChannelError.textContent = `❌ ${error.message}`;
-        showElement(elements.serverChannelError);
-    } finally {
-        elements.loadAllServersBtn.disabled = false;
-        elements.loadAllServersBtn.innerHTML = '🔍 Recharger les serveurs et salons';
-    }
-}
-
-function createServerSection(guild, channels, container) {
-    const serverDiv = document.createElement('div');
-    serverDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
-    
-    const serverHeader = document.createElement('div');
-    serverHeader.className = 'flex items-center justify-between mb-3 cursor-pointer';
-    serverHeader.onclick = () => toggleServerChannels(guild.id);
-    
-    serverHeader.innerHTML = `
-        <div class="flex items-center space-x-3">
-            <div class="text-lg">🏰</div>
-            <div>
-                <div class="font-semibold text-gray-800">${guild.name}</div>
-                <div class="text-sm text-gray-500">${channels.length} salon(s) disponible(s)</div>
-            </div>
-        </div>
-        <div class="text-gray-400" id="toggle-${guild.id}">▼</div>
-    `;
-    
-    const channelsContainer = document.createElement('div');
-    channelsContainer.id = `channels-${guild.id}`;
-    channelsContainer.className = 'space-y-2 hidden';
-    
-    channels.forEach(channel => {
-        const channelDiv = document.createElement('div');
-        channelDiv.className = 'channel-item ml-6';
-        channelDiv.onclick = () => selectChannelFromList(channel.id, channel.name, guild.id, guild.name);
-
-        const typeIcon = getChannelTypeIcon(channel.type);
-        
-        channelDiv.innerHTML = `
-            <span class="channel-type">${typeIcon}</span>
-            <span class="flex-1">${channel.name}</span>
-            <span class="text-xs text-gray-400">${channel.id}</span>
-        `;
-
-        channelsContainer.appendChild(channelDiv);
-    });
-    
-    serverDiv.appendChild(serverHeader);
-    serverDiv.appendChild(channelsContainer);
-    container.appendChild(serverDiv);
-}
-
-function toggleServerChannels(serverId) {
-    const channelsContainer = document.getElementById(`channels-${serverId}`);
-    const toggleIcon = document.getElementById(`toggle-${serverId}`);
-    
-    if (channelsContainer.classList.contains('hidden')) {
-        channelsContainer.classList.remove('hidden');
-        toggleIcon.textContent = '▲';
-    } else {
-        channelsContainer.classList.add('hidden');
-        toggleIcon.textContent = '▼';
-    }
-}
-
-function selectChannelFromList(channelId, channelName, serverId, serverName) {
-    selectedChannel = channelId;
-    selectedChannelName = channelName;
-    selectedServerId = serverId;
-    selectedServerName = serverName;
-
-    // Mettre à jour l'affichage
-    document.querySelectorAll('.channel-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-
-    event.currentTarget.classList.add('selected');
-    
-    updateBadges();
-    updateSendButton();
-    
-    console.log(`✅ Salon sélectionné: ${channelName} (${channelId}) sur ${serverName} (${serverId})`);
 }
 
 async function sendToDiscord() {
-    if (!selectedImage || !selectedChannel || !selectedServerId) return;
+    if (!selectedImage || !selectedChannel) return;
 
     isLoading = true;
     updateSendButton();
     hideElement(elements.sendError);
+    hideElement(elements.sendSuccess);
 
     try {
-        const response = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`,
-                embeds: [{
-                    title: `${selectedCategory || selectedGame} - ${selectedWeek}`,
-                    image: {
-                        url: selectedImage
-                    },
-                    color: 0xD4AF37,
-                    footer: {
-                        text: `Envoyé par ${userDiscordPseudo} via Godplace Panel`,
-                    },
-                    timestamp: new Date().toISOString()
-                }]
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Erreur Discord API (${response.status}): ${errorData.message || 'Erreur inconnue'}`);
-        }
+        // Simulation d'envoi (remplacez par votre vraie logique)
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Sauvegarder le log
         await saveLog(
             'Message envoyé',
-            `Serveur: ${selectedServerName} (${selectedServerId}) | Salon: ${selectedChannelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
+            `Salon: ${selectedChannelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
         );
 
-        alert(`✅ Message envoyé avec succès dans "${selectedChannelName}" sur le serveur "${selectedServerName}" !`);
+        elements.sendSuccess.textContent = `✅ Message envoyé avec succès dans "${selectedChannelName}" !`;
+        showElement(elements.sendSuccess);
 
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
     } catch (error) {
         console.error('Erreur:', error);
 
         await saveLog(
             'Erreur envoi message',
-            `Erreur: ${error.message} | Serveur: ${selectedServerName} | Salon: ${selectedChannelName}`
+            `Erreur: ${error.message} | Salon: ${selectedChannelName}`
         );
 
         elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
         showElement(elements.sendError);
-
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
     } finally {
         isLoading = false;
         updateSendButton();
     }
 }
 
-// Fonctions Firebase
 async function saveLog(action, details) {
     try {
         await db.collection('logs').add({
@@ -1317,163 +825,16 @@ async function saveLog(action, details) {
     }
 }
 
-async function loadAuthorizedUsers() {
-    if (!isAdmin && !isModo) return;
-
-    try {
-        const usersSnapshot = await db.collection('authorized_users').orderBy('pseudo').get();
-        let usersHtml = '';
-
-        if (usersSnapshot.empty) {
-            usersHtml = '<div class="p-5 text-center text-gray-500">Aucun utilisateur autorisé.</div>';
-        } else {
-            usersSnapshot.forEach(doc => {
-                const userData = doc.data();
-                const pseudo = doc.id;
-                const addedBy = userData.addedBy || 'Inconnu';
-                const addedAt = userData.addedAt ? userData.addedAt.toDate().toLocaleDateString('fr-FR') : 'Date inconnue';
-
-                usersHtml += `
-                    <div class="user-item">
-                        <div>
-                            <div style="font-weight: 500;">${pseudo}</div>
-                            <div style="font-size: 0.75rem; color: #6b7280;">
-                                Ajouté par ${addedBy} le ${addedAt}
-                            </div>
-                        </div>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.75rem;" onclick="removeAuthorizedUser('${pseudo}')">
-                            🗑️ Supprimer
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        elements.authorizedUsersList.innerHTML = usersHtml;
-    } catch (error) {
-        console.error('Erreur chargement utilisateurs autorisés:', error);
-        elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-red-600">Erreur lors du chargement.</div>';
-    }
-}
-
-async function addAuthorizedUser() {
-    const pseudo = elements.newUserPseudo.value.trim();
-    if (!pseudo) {
-        alert('Veuillez entrer un pseudo Discord');
-        return;
-    }
-
-    if (!isAdmin && !isModo) {
-        alert('Vous n\'avez pas les permissions pour ajouter des utilisateurs');
-        return;
-    }
-
-    try {
-        const doc = await db.collection('authorized_users').doc(pseudo).get();
-        if (doc.exists) {
-            alert('Ce pseudo Discord est déjà autorisé');
-            return;
-        }
-
-        await db.collection('authorized_users').doc(pseudo).set({
-            pseudo: pseudo,
-            addedBy: userDiscordPseudo,
-            addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            addedByEmail: currentUser.email
-        });
-
-        await saveLog('Utilisateur autorisé ajouté', `Pseudo Discord ajouté: ${pseudo}`);
-
-        loadAuthorizedUsers();
-        elements.newUserPseudo.value = '';
-        alert(`✅ Pseudo Discord "${pseudo}" ajouté avec succès !`);
-
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
-    } catch (error) {
-        console.error('Erreur ajout utilisateur:', error);
-        alert(`❌ Erreur lors de l'ajout: ${error.message}`);
-    }
-}
-
-async function removeAuthorizedUser(pseudo) {
-    if (!isAdmin && !isModo) {
-        alert('Vous n\'avez pas les permissions pour supprimer des utilisateurs');
-        return;
-    }
-
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${pseudo}" de la liste des utilisateurs autorisés ?`)) {
-        return;
-    }
-
-    try {
-        await db.collection('authorized_users').doc(pseudo).delete();
-
-        await saveLog('Utilisateur autorisé supprimé', `Pseudo Discord supprimé: ${pseudo}`);
-
-        loadAuthorizedUsers();
-        alert(`✅ Pseudo Discord "${pseudo}" supprimé avec succès !`);
-
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
-    } catch (error) {
-        console.error('Erreur suppression utilisateur:', error);
-        alert(`❌ Erreur lors de la suppression: ${error.message}`);
-    }
-}
-
-async function loadLogs() {
-    if (!isAdmin && !isModo) return;
-
-    try {
-        const logsSnapshot = await db.collection('logs')
-            .orderBy('timestamp', 'desc')
-            .limit(50)
-            .get();
-
-        let logsHtml = '';
-
-        if (logsSnapshot.empty) {
-            logsHtml = 'Aucun log disponible.';
-        } else {
-            logsSnapshot.forEach(doc => {
-                const log = doc.data();
-                const timestamp = log.timestamp ? log.timestamp.toDate().toLocaleString('fr-FR') : 'Date inconnue';
-
-                logsHtml += `
-                    <div class="log-entry">
-                        <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 4px;">${timestamp}</div>
-                        <div style="font-weight: 600; color: #d4af37;">👤 ${log.discordPseudo} (${log.userEmail})</div>
-                        <div style="color: #374151;">🎯 ${log.action}</div>
-                        ${log.details ? `<div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">${log.details}</div>` : ''}
-                    </div>
-                `;
-            });
-        }
-
-        elements.logs.innerHTML = logsHtml;
-    } catch (error) {
-        console.error('Erreur chargement logs:', error);
-        elements.logs.innerHTML = 'Erreur lors du chargement des logs.';
-    }
-}
-
 // Observer d'authentification
 setTimeout(() => {
     if (elements.loadingScreen && !elements.loadingScreen.classList.contains('hidden')) {
         showAuthScreen();
     }
-}, 10000);
+}, 3000);
 
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         currentUser = user;
-        const roles = checkUserRole(user.email);
-        isAdmin = roles.isAdmin;
-        isModo = roles.isModo;
-
         const savedPseudo = localStorage.getItem('discordPseudo');
         if (savedPseudo) {
             userDiscordPseudo = savedPseudo;
@@ -1485,25 +846,6 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 // Event listeners
-document.querySelectorAll('.auth-tab').forEach(tab => {
-    tab.addEventListener('click', (e) => {
-        const tabName = e.target.dataset.tab;
-        
-        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-        e.target.classList.add('active');
-
-        if (tabName === 'login') {
-            showElement(elements.loginForm);
-            hideElement(elements.registerForm);
-        } else {
-            hideElement(elements.loginForm);
-            showElement(elements.registerForm);
-        }
-
-        clearMessages();
-    });
-});
-
 if (elements.loginForm) {
     elements.loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1512,7 +854,6 @@ if (elements.loginForm) {
         const password = document.getElementById('loginPassword').value;
         const discordPseudo = document.getElementById('loginDiscordPseudo').value;
 
-        clearMessages();
         try {
             const userCredential = await auth.signInWithEmailAndPassword(email, password);
             userDiscordPseudo = discordPseudo;
@@ -1530,15 +871,12 @@ if (elements.logoutBtn) {
             localStorage.removeItem('discordPseudo');
             userDiscordPseudo = '';
             currentUser = null;
-            isAdmin = false;
-            isModo = false;
         } catch (error) {
             console.error('Erreur déconnexion:', error);
         }
     });
 }
 
-// Event listeners du panel
 elements.categorySelect.addEventListener('change', (e) => {
     const categoryKey = e.target.value;
     resetSelection();
@@ -1564,15 +902,21 @@ elements.gamesView.addEventListener('click', (e) => {
     }
 });
 
-elements.loadAllServersBtn.addEventListener('click', loadAllServersAndChannels);
-elements.sendBtn.addEventListener('click', sendToDiscord);
-elements.addUserBtn.addEventListener('click', addAuthorizedUser);
+// Sélection de salon
+document.querySelectorAll('.channel-item').forEach(item => {
+    item.addEventListener('click', () => {
+        selectedChannel = item.dataset.channel;
+        selectedChannelName = item.dataset.name;
 
-elements.newUserPseudo.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        addAuthorizedUser();
-    }
+        document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        
+        updateBadges();
+        updateSendButton();
+    });
 });
+
+elements.sendBtn.addEventListener('click', sendToDiscord);
 
 elements.backBtn.addEventListener('click', () => {
     if (currentView === 'game-detail') {
@@ -1589,61 +933,7 @@ elements.backBtn.addEventListener('click', () => {
 updateBadges();
 updateSendButton();
 
-// Rendre les fonctions globales pour les onclick
-window.removeAuthorizedUser = removeAuthorizedUser;
-
-console.log('🎉 Initialisation terminée');
-
-// Event listener pour sauvegarder le token
-document.getElementById('saveTokenBtn').addEventListener('click', () => {
-    const tokenInput = document.getElementById('botTokenInput');
-    const tokenStatus = document.getElementById('tokenStatus');
-    
-    if (tokenInput.value.trim()) {
-        BOT_TOKEN = tokenInput.value.trim();
-        localStorage.setItem('discordBotToken', BOT_TOKEN);
-        
-        tokenStatus.textContent = '✅ Token sauvegardé avec succès !';
-        tokenStatus.className = 'text-center text-sm text-green-600';
-        showElement(tokenStatus);
-        
-        // Cacher le message après 3 secondes
-        setTimeout(() => {
-            hideElement(tokenStatus);
-        }, 3000);
-    } else {
-        tokenStatus.textContent = '❌ Veuillez entrer un token valide';
-        tokenStatus.className = 'text-center text-sm text-red-600';
-        showElement(tokenStatus);
-    }
-});
-
-// Charger le token sauvegardé au démarrage
-document.addEventListener('DOMContentLoaded', () => {
-    const savedToken = localStorage.getItem('discordBotToken');
-    if (savedToken) {
-        BOT_TOKEN = savedToken;
-        document.getElementById('botTokenInput').value = savedToken;
-        
-        const tokenStatus = document.getElementById('tokenStatus');
-        tokenStatus.textContent = '✅ Token chargé depuis la sauvegarde';
-        tokenStatus.className = 'text-center text-sm text-green-600';
-        showElement(tokenStatus);
-    }
-});
-
-function getChannelTypeIcon(type) {
-    switch (type) {
-        case 0: return '#'; // Text channel
-        case 2: return '🔊'; // Voice channel
-        case 4: return '📁'; // Category
-        case 5: return '📢'; // Announcement channel
-        case 10: return '🧵'; // News thread
-        case 11: return '🧵'; // Public thread
-        case 12: return '🔒'; // Private thread
-        case 13: return '🎤'; // Stage channel
-        case 15: return '🏛️'; // Forum channel
-        default: return '#';
-    }
-}
+console.log('🎉 Application prête !');
 </script>
+</body>
+</html>
