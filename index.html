@@ -220,6 +220,15 @@
             font-size: 0.875rem;
             margin-bottom: 8px;
         }
+
+        .webhook-info {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 
@@ -275,13 +284,21 @@
             </button>
         </div>
 
-        <!-- Discord Bot Configuration -->
+        <!-- Discord Webhook Configuration -->
         <div class="config-section">
-            <div class="config-title">⚙️ Configuration du Bot Discord</div>
-            <p class="text-sm text-gray-600 mb-3">Entrez le token de votre bot Discord pour envoyer les messages</p>
-            <input type="password" id="botTokenInput" class="config-input" placeholder="Votre token de bot Discord">
-            <button id="saveTokenBtn" class="btn btn-outline btn-sm">💾 Sauvegarder le token</button>
-            <div id="tokenStatus" class="text-sm mt-2"></div>
+            <div class="config-title">🔗 Configuration Discord Webhook</div>
+            <p class="text-sm text-gray-600 mb-3">Entrez l'URL du webhook Discord pour envoyer les messages</p>
+            <input type="url" id="webhookUrlInput" class="config-input" placeholder="https://discord.com/api/webhooks/...">
+            <button id="saveWebhookBtn" class="btn btn-outline btn-sm">💾 Sauvegarder le webhook</button>
+            <div id="webhookStatus" class="text-sm mt-2"></div>
+            
+            <div class="webhook-info">
+                <strong>📋 Comment créer un webhook Discord :</strong><br>
+                1. Allez dans les paramètres de votre salon Discord<br>
+                2. Cliquez sur "Intégrations" → "Webhooks"<br>
+                3. Cliquez sur "Nouveau Webhook"<br>
+                4. Copiez l'URL du webhook et collez-la ci-dessus
+            </div>
         </div>
 
         <!-- Header -->
@@ -370,59 +387,17 @@
         <!-- Channel Selection -->
         <div id="channelView" class="card hidden">
             <div class="card-header">
-                <h2 class="card-title">4. Choisissez un salon Discord</h2>
-                <p class="card-description">Sélectionnez le salon où envoyer le contenu</p>
+                <h2 class="card-title">4. Prêt à envoyer</h2>
+                <p class="card-description">Le message sera envoyé via le webhook Discord configuré</p>
             </div>
             <div class="card-content space-y-4">
-                <div class="space-y-2">
-                    <div class="channel-item" data-channel="1378679774742056974" data-name="Grille de lumière">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Grille de lumière</span>
-                    </div>
-                    <div class="channel-item" data-channel="1378680922928320653" data-name="Éclaireurs">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Éclaireurs</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922071473295411" data-name="Entre frères et soeurs en christ">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Entre frères et soeurs en christ</span>
-                    </div>
-                    <div class="channel-item" data-channel="1365417738436087909" data-name="Je préfères G1">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Je préfères G1</span>
-                    </div>
-                    <div class="channel-item" data-channel="1365417832774635540" data-name="Je préfères G2">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Je préfères G2</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042309966073856" data-name="Savoir chrétien G1">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G1</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042329393954887" data-name="Savoir chrétien G2">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G2</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042347492380693" data-name="Savoir chrétien G3">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G3</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922077454110731" data-name="Carnet chretien">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Carnet chretien</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922087143080056" data-name="Loue avec ton art">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Loue avec ton art</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922084739612794" data-name="Chaîne sacrée">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Chaîne sacrée</span>
-                    </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-2">Aperçu du message :</div>
+                    <div class="font-medium" id="messagePreview">**Catégorie** - Option</div>
                 </div>
                 
                 <button id="sendBtn" class="btn btn-primary w-full" disabled>
-                    📤 Envoyer au bot Discord
+                    📤 Envoyer via Discord Webhook
                 </button>
                 <div id="sendError" class="alert alert-error hidden"></div>
                 <div id="sendSuccess" class="alert alert-success hidden"></div>
@@ -433,7 +408,7 @@
         <div class="flex flex-wrap gap-2 justify-center">
             <span id="categoryBadge" class="badge badge-inactive">Catégorie: Non sélectionnée</span>
             <span id="weekBadge" class="badge badge-inactive">Option: Non sélectionnée</span>
-            <span id="channelBadge" class="badge badge-inactive">Salon: Non sélectionné</span>
+            <span id="webhookBadge" class="badge badge-inactive">Webhook: Non configuré</span>
         </div>
     </div>
 
@@ -463,11 +438,9 @@ let currentView = 'main';
 let selectedCategory = '';
 let selectedGame = '';
 let selectedWeek = '';
-let selectedChannel = '';
-let selectedChannelName = '';
 let selectedImage = '';
 let isLoading = false;
-let discordBotToken = '';
+let discordWebhookUrl = '';
 
 // Données des catégories (même structure que votre code original)
 const categories = {
@@ -494,7 +467,7 @@ const categories = {
             "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png",
             "Place à la victoire": "https://media.discordapp.net/attachments/1365412596655853699/1365449855157407754/BANDEAUX_-_29.png",
             "Team oui ou team non": "https://media.discordapp.net/attachments/1365412596655853699/1365449952163266712/BANDEAUX_-_31.png",
-            "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365450022350749717/BANDEAUX_-_23.png",
+            "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365449022350749717/BANDEAUX_-_23.png",
             "face à face": "https://media.discordapp.net/attachments/1365412596655853699/1365450102835249172/BANDEAUX_-_33.png",
             "à vos votes": "https://media.discordapp.net/attachments/1365412596655853699/1365450176457609216/BANDEAUX_-_35.png",
             "Installez-vous": "https://media.discordapp.net/attachments/1365412596655853699/1365450239045144576/BANDEAUX_-_36.png",
@@ -654,10 +627,11 @@ const elements = {
     sendSuccess: document.getElementById('sendSuccess'),
     categoryBadge: document.getElementById('categoryBadge'),
     weekBadge: document.getElementById('weekBadge'),
-    channelBadge: document.getElementById('channelBadge'),
-    botTokenInput: document.getElementById('botTokenInput'),
-    saveTokenBtn: document.getElementById('saveTokenBtn'),
-    tokenStatus: document.getElementById('tokenStatus')
+    webhookBadge: document.getElementById('webhookBadge'),
+    webhookUrlInput: document.getElementById('webhookUrlInput'),
+    saveWebhookBtn: document.getElementById('saveWebhookBtn'),
+    webhookStatus: document.getElementById('webhookStatus'),
+    messagePreview: document.getElementById('messagePreview')
 };
 
 // Fonctions utilitaires
@@ -692,7 +666,7 @@ function showMainPanel() {
     if (elements.userDiscord) {
         elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
     }
-    loadBotToken();
+    loadWebhookUrl();
 }
 
 function hideAllViews() {
@@ -722,13 +696,12 @@ function resetSelection() {
     selectedCategory = '';
     selectedGame = '';
     selectedWeek = '';
-    selectedChannel = '';
-    selectedChannelName = '';
     selectedImage = '';
     hideElement(elements.previewView);
     hideElement(elements.channelView);
     updateBadges();
     updateSendButton();
+    updateMessagePreview();
 }
 
 function updateBadges() {
@@ -739,14 +712,19 @@ function updateBadges() {
     elements.weekBadge.textContent = `Option: ${selectedWeek || 'Non sélectionnée'}`;
     elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
 
-    elements.channelBadge.textContent = `Salon: ${selectedChannelName || 'Non sélectionné'}`;
-    elements.channelBadge.className = `badge ${selectedChannel ? 'badge-active' : 'badge-inactive'}`;
+    elements.webhookBadge.textContent = `Webhook: ${discordWebhookUrl ? 'Configuré' : 'Non configuré'}`;
+    elements.webhookBadge.className = `badge ${discordWebhookUrl ? 'badge-active' : 'badge-inactive'}`;
 }
 
 function updateSendButton() {
-    const canSend = selectedImage && selectedChannel && !isLoading && discordBotToken;
+    const canSend = selectedImage && !isLoading && discordWebhookUrl;
     elements.sendBtn.disabled = !canSend;
-    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer au bot Discord';
+    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer via Discord Webhook';
+}
+
+function updateMessagePreview() {
+    const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : selectedGame ? gameCategories[selectedGame]?.title : 'Catégorie';
+    elements.messagePreview.textContent = `**${categoryTitle}** - ${selectedWeek || 'Option'}`;
 }
 
 function showWeekButtons(categoryKey, isGame = false) {
@@ -803,40 +781,60 @@ function selectWeek(week, imageUrl) {
     showElement(elements.channelView);
     updateBadges();
     updateSendButton();
+    updateMessagePreview();
 }
 
-// Gestion du token Discord
-function saveBotToken() {
-    const token = elements.botTokenInput.value.trim();
-    if (token) {
-        discordBotToken = token;
-        localStorage.setItem('discordBotToken', token);
-        elements.tokenStatus.textContent = '✅ Token sauvegardé';
-        elements.tokenStatus.style.color = 'green';
-        elements.botTokenInput.value = '';
-        updateSendButton();
+// Gestion du webhook Discord
+async function saveWebhookUrl() {
+    const url = elements.webhookUrlInput.value.trim();
+    if (url && url.includes('discord.com/api/webhooks/')) {
+        try {
+            // Sauvegarder dans Firestore
+            await db.collection('users').doc(currentUser.uid).set({
+                webhookUrl: url,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            discordWebhookUrl = url;
+            elements.webhookStatus.textContent = '✅ Webhook sauvegardé dans Firestore';
+            elements.webhookStatus.style.color = 'green';
+            elements.webhookUrlInput.value = '';
+            updateBadges();
+            updateSendButton();
+        } catch (error) {
+            console.error('Erreur sauvegarde webhook:', error);
+            elements.webhookStatus.textContent = '❌ Erreur lors de la sauvegarde';
+            elements.webhookStatus.style.color = 'red';
+        }
     } else {
-        elements.tokenStatus.textContent = '❌ Veuillez entrer un token valide';
-        elements.tokenStatus.style.color = 'red';
+        elements.webhookStatus.textContent = '❌ Veuillez entrer une URL de webhook Discord valide';
+        elements.webhookStatus.style.color = 'red';
     }
 }
 
-function loadBotToken() {
-    const savedToken = localStorage.getItem('discordBotToken');
-    if (savedToken) {
-        discordBotToken = savedToken;
-        elements.tokenStatus.textContent = '✅ Token chargé';
-        elements.tokenStatus.style.color = 'green';
-    } else {
-        elements.tokenStatus.textContent = '⚠️ Aucun token configuré';
-        elements.tokenStatus.style.color = 'orange';
+async function loadWebhookUrl() {
+    try {
+        const doc = await db.collection('users').doc(currentUser.uid).get();
+        if (doc.exists && doc.data().webhookUrl) {
+            discordWebhookUrl = doc.data().webhookUrl;
+            elements.webhookStatus.textContent = '✅ Webhook chargé depuis Firestore';
+            elements.webhookStatus.style.color = 'green';
+        } else {
+            elements.webhookStatus.textContent = '⚠️ Aucun webhook configuré';
+            elements.webhookStatus.style.color = 'orange';
+        }
+    } catch (error) {
+        console.error('Erreur chargement webhook:', error);
+        elements.webhookStatus.textContent = '⚠️ Erreur lors du chargement';
+        elements.webhookStatus.style.color = 'orange';
     }
+    updateBadges();
     updateSendButton();
 }
 
-// Fonction d'envoi vers Discord
+// Fonction d'envoi vers Discord via Webhook
 async function sendToDiscord() {
-    if (!selectedImage || !selectedChannel || !discordBotToken) return;
+    if (!selectedImage || !discordWebhookUrl) return;
 
     isLoading = true;
     updateSendButton();
@@ -844,59 +842,52 @@ async function sendToDiscord() {
     hideElement(elements.sendSuccess);
 
     try {
-        // Télécharger l'image
-        const imageResponse = await fetch(selectedImage);
-        if (!imageResponse.ok) {
-            throw new Error('Impossible de télécharger l\'image');
-        }
-
-        const imageBlob = await imageResponse.blob();
-
-        // Préparer les données pour Discord
-        const formData = new FormData();
+        // Créer le payload pour le webhook Discord
+        const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : gameCategories[selectedGame]?.title;
         
-        // Ajouter le message
-        const messageContent = {
-            content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`
+        const payload = {
+            content: `**${categoryTitle}** - ${selectedWeek}`,
+            embeds: [{
+                title: `${categoryTitle} - ${selectedWeek}`,
+                image: {
+                    url: selectedImage
+                },
+                color: 0xd4af37, // Couleur dorée
+                timestamp: new Date().toISOString(),
+                footer: {
+                    text: "Envoyé depuis Godplace Panel"
+                }
+            }]
         };
-        
-        formData.append('payload_json', JSON.stringify(messageContent));
-        
-        // Ajouter l'image
-        const filename = `${(selectedCategory || selectedGame)}_${selectedWeek}.png`.replace(/[^a-zA-Z0-9._-]/g, '_');
-        formData.append('files[0]', imageBlob, filename);
 
-        // Envoyer à Discord
-        const discordResponse = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
+        // Envoyer via webhook Discord
+        const response = await fetch(discordWebhookUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bot ${discordBotToken}`
+                'Content-Type': 'application/json',
             },
-            body: formData
+            body: JSON.stringify(payload)
         });
 
-        if (!discordResponse.ok) {
-            const errorData = await discordResponse.text();
-            console.error('Erreur Discord API:', errorData);
-            throw new Error(`Erreur Discord API: ${discordResponse.status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erreur webhook: ${response.status} - ${errorText}`);
         }
-
-        const result = await discordResponse.json();
 
         // Sauvegarder le log
         await saveLog(
-            'Message envoyé',
-            `Salon: ${selectedChannelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
+            'Message envoyé via webhook',
+            `Catégorie: ${categoryTitle} | Option: ${selectedWeek} | Image: ${selectedImage}`
         );
 
-        elements.sendSuccess.textContent = `✅ Message envoyé avec succès dans "${selectedChannelName}" !`;
+        elements.sendSuccess.textContent = `✅ Message envoyé avec succès via Discord Webhook !`;
         showElement(elements.sendSuccess);
 
     } catch (error) {
         console.error('Erreur:', error);
         await saveLog(
-            'Erreur envoi message',
-            `Erreur: ${error.message} | Salon: ${selectedChannelName}`
+            'Erreur envoi webhook',
+            `Erreur: ${error.message} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
         );
         elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
         showElement(elements.sendError);
@@ -973,8 +964,8 @@ if (elements.logoutBtn) {
     });
 }
 
-// Gestion du token Discord
-elements.saveTokenBtn.addEventListener('click', saveBotToken);
+// Gestion du webhook Discord
+elements.saveWebhookBtn.addEventListener('click', saveWebhookUrl);
 
 elements.categorySelect.addEventListener('change', (e) => {
     const categoryKey = e.target.value;
@@ -1001,19 +992,6 @@ elements.gamesView.addEventListener('click', (e) => {
     }
 });
 
-// Sélection de salon
-document.querySelectorAll('.channel-item').forEach(item => {
-    item.addEventListener('click', () => {
-        selectedChannel = item.dataset.channel;
-        selectedChannelName = item.dataset.name;
-        document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('selected'));
-        item.classList.add('selected');
-        
-        updateBadges();
-        updateSendButton();
-    });
-});
-
 elements.sendBtn.addEventListener('click', sendToDiscord);
 
 elements.backBtn.addEventListener('click', () => {
@@ -1030,6 +1008,7 @@ elements.backBtn.addEventListener('click', () => {
 // Initialisation
 updateBadges();
 updateSendButton();
+updateMessagePreview();
 
 console.log('🎉 Application prête !');
     </script>
