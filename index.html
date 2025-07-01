@@ -1337,49 +1337,78 @@
         }
 
         async function sendToDiscord() {
-            if (!selectedImage || !selectedChannel) return;
+    if (!selectedImage || !selectedChannel) return;
 
-            isLoading = true;
-            updateSendButton();
-            hideElement(elements.sendError);
+    isLoading = true;
+    updateSendButton();
+    hideElement(elements.sendError);
 
-            try {
-                // Simuler l'envoi du message
-                await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+        // ⚠️ REMPLACEZ PAR VOTRE TOKEN DE BOT
+        const BOT_TOKEN = 'VOTRE_TOKEN_ICI';
+        const API_URL = `https://discord.com/api/v10/channels/${selectedChannel}/messages`;
 
-                const channelName = availableChannels[selectedChannel];
+        const response = await fetch(1365426043535626361, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bot ${MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`,
+                embeds: [{
+                    title: `${selectedCategory || selectedGame} - ${selectedWeek}`,
+                    image: {
+                        url: selectedImage
+                    },
+                    color: 0xD4AF37, // Couleur dorée
+                    footer: {
+                        text: `Envoyé par ${userDiscordPseudo}`,
+                        icon_url: "https://cdn.discordapp.com/emojis/1234567890123456789.png"
+                    },
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
 
-                // Sauvegarder le log
-                await saveLog(
-                    'Message envoyé',
-                    `Salon: ${channelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
-                );
-
-                alert(`✅ Message envoyé avec succès dans le salon "${channelName}" !`);
-
-                if (isAdmin || isModo) {
-                    loadLogs();
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-
-                // Sauvegarder le log d'erreur
-                await saveLog(
-                    'Erreur envoi message',
-                    `Erreur: ${error.message} | Salon: ${availableChannels[selectedChannel]} | Catégorie: ${selectedCategory || selectedGame}`
-                );
-
-                elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
-                showElement(elements.sendError);
-
-                if (isAdmin || isModo) {
-                    loadLogs();
-                }
-            } finally {
-                isLoading = false;
-                updateSendButton();
-            }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Erreur Discord API (${response.status}): ${errorData.message || 'Erreur inconnue'}`);
         }
+
+        const channelName = availableChannels[selectedChannel];
+
+        // Sauvegarder le log
+        await saveLog(
+            'Message envoyé',
+            `Salon: ${channelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
+        );
+
+        alert(`✅ Message envoyé avec succès dans le salon "${channelName}" !`);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+
+        // Sauvegarder le log d'erreur
+        await saveLog(
+            'Erreur envoi message',
+            `Erreur: ${error.message} | Salon: ${availableChannels[selectedChannel]} | Catégorie: ${selectedCategory || selectedGame}`
+        );
+
+        elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
+        showElement(elements.sendError);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } finally {
+        isLoading = false;
+        updateSendButton();
+    }
+}
 
         // Event listeners du panel
         elements.testBtn.addEventListener('click', testConnection);
