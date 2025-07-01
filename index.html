@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Godplace Panel</title>
+    <title>Godplace Panel - Envoi Réel</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -97,6 +97,12 @@
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
             color: #166534;
+        }
+        
+        .alert-warning {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            color: #92400e;
         }
         
         .card {
@@ -198,29 +204,39 @@
             border-color: #d4af37;
         }
 
-        .proxy-info {
-            background: #e3f2fd;
-            border: 1px solid #90caf9;
+        .debug-info {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
             padding: 12px;
-            margin-bottom: 16px;
+            margin-top: 16px;
+            font-size: 0.75rem;
+            font-family: monospace;
+        }
+
+        .method-status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 4px 0;
             font-size: 0.875rem;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .method-trying {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
         }
 
-        .status-online {
-            background-color: #10b981;
+        .method-success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
         }
 
-        .status-offline {
-            background-color: #ef4444;
+        .method-failed {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
         }
     </style>
 </head>
@@ -277,22 +293,10 @@
             </button>
         </div>
 
-        <!-- Bot Status -->
-        <div class="proxy-info">
-            <div class="flex items-center">
-                <span id="botStatus" class="status-indicator status-online"></span>
-                <strong>🤖 Bot Discord Status:</strong>
-                <span id="botStatusText" class="ml-2">Connecté et prêt à envoyer dans tous les salons</span>
-            </div>
-            <div class="mt-2 text-xs text-gray-600">
-                ✅ Un seul bot peut envoyer dans tous vos salons Discord - pas besoin de webhooks multiples !
-            </div>
-        </div>
-
         <!-- Header -->
         <div class="text-center">
             <h1 class="text-4xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
-            <p class="text-gray-600 mb-4">Panneau d'administration - Multi-salons</p>
+            <p class="text-gray-600 mb-4">Envoi RÉEL vers Discord</p>
         </div>
 
         <!-- Back Button -->
@@ -383,65 +387,64 @@
                     <div class="channel-item" data-channel="1378679774742056974" data-name="Grille de lumière">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Grille de lumière</span>
-                        <span class="text-xs opacity-75">ID: 1378679774742056974</span>
                     </div>
                     <div class="channel-item" data-channel="1378680922928320653" data-name="Éclaireurs">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Éclaireurs</span>
-                        <span class="text-xs opacity-75">ID: 1378680922928320653</span>
                     </div>
                     <div class="channel-item" data-channel="1325922071473295411" data-name="Entre frères et soeurs en christ">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Entre frères et soeurs en christ</span>
-                        <span class="text-xs opacity-75">ID: 1325922071473295411</span>
                     </div>
                     <div class="channel-item" data-channel="1365417738436087909" data-name="Je préfères G1">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Je préfères G1</span>
-                        <span class="text-xs opacity-75">ID: 1365417738436087909</span>
                     </div>
                     <div class="channel-item" data-channel="1365417832774635540" data-name="Je préfères G2">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Je préfères G2</span>
-                        <span class="text-xs opacity-75">ID: 1365417832774635540</span>
                     </div>
                     <div class="channel-item" data-channel="1369042309966073856" data-name="Savoir chrétien G1">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Savoir chrétien G1</span>
-                        <span class="text-xs opacity-75">ID: 1369042309966073856</span>
                     </div>
                     <div class="channel-item" data-channel="1369042329393954887" data-name="Savoir chrétien G2">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Savoir chrétien G2</span>
-                        <span class="text-xs opacity-75">ID: 1369042329393954887</span>
                     </div>
                     <div class="channel-item" data-channel="1369042347492380693" data-name="Savoir chrétien G3">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Savoir chrétien G3</span>
-                        <span class="text-xs opacity-75">ID: 1369042347492380693</span>
                     </div>
                     <div class="channel-item" data-channel="1325922077454110731" data-name="Carnet chretien">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Carnet chretien</span>
-                        <span class="text-xs opacity-75">ID: 1325922077454110731</span>
                     </div>
                     <div class="channel-item" data-channel="1325922087143080056" data-name="Loue avec ton art">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Loue avec ton art</span>
-                        <span class="text-xs opacity-75">ID: 1325922087143080056</span>
                     </div>
                     <div class="channel-item" data-channel="1325922084739612794" data-name="Chaîne sacrée">
                         <span class="mr-3">#</span>
                         <span class="flex-1">Chaîne sacrée</span>
-                        <span class="text-xs opacity-75">ID: 1325922084739612794</span>
                     </div>
                 </div>
                 
+                <!-- Debug Info -->
+                <div id="debugInfo" class="debug-info hidden">
+                    <div><strong>🔍 Debug Info:</strong></div>
+                    <div id="debugContent"></div>
+                </div>
+
+                <!-- Method Status -->
+                <div id="methodStatus" class="hidden"></div>
+                
                 <button id="sendBtn" class="btn btn-primary w-full" disabled>
-                    📤 Envoyer dans le salon sélectionné
+                    📤 Envoyer VRAIMENT dans Discord
                 </button>
                 <div id="sendError" class="alert alert-error hidden"></div>
                 <div id="sendSuccess" class="alert alert-success hidden"></div>
+                <div id="sendWarning" class="alert alert-warning hidden"></div>
             </div>
         </div>
 
@@ -454,7 +457,7 @@
     </div>
 
     <script>
-console.log('🚀 Démarrage de l\'application multi-salons...');
+console.log('🚀 Démarrage de l\'application RÉELLE...');
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -472,7 +475,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// TOKEN DISCORD BOT (UN SEUL BOT POUR TOUS LES SALONS)
+// TOKEN DISCORD BOT
 const DISCORD_BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.G0bRyj.Ili2DBVd7bJFUggRz2jiXUCwrxdl0Z7r9n4TsA';
 
 // Variables globales
@@ -487,125 +490,20 @@ let selectedChannelName = '';
 let selectedImage = '';
 let isLoading = false;
 
-// Données des catégories (même structure que votre code original)
+// Données des catégories (version courte pour test)
 const categories = {
-    mondeEnDeclin: {
-        title: "Le Monde en Déclin",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725348314222754/FICHES_SPECIFIQUES_PETIT_FORMAT_-_6.png"
-        }
-    },
-    gagneCoeurChrist: {
-        title: "Gagne le cœur du Christ",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725653625864284/FICHES_SPECIFIQUES_PETIT_FORMAT_-_13.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725697045434488/FICHES_SPECIFIQUES_PETIT_FORMAT_-_14.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725725654782062/FICHES_SPECIFIQUES_PETIT_FORMAT_-_15.png"
-        }
-    },
     Bandeaux: {
         title: "Bandeaux",
         weeks: {
             "à vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
-            "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png",
-            "Place à la victoire": "https://media.discordapp.net/attachments/1365412596655853699/1365449855157407754/BANDEAUX_-_29.png",
-            "Team oui ou team non": "https://media.discordapp.net/attachments/1365412596655853699/1365449952163266712/BANDEAUX_-_31.png",
-            "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365450022350749717/BANDEAUX_-_23.png",
-            "face à face": "https://media.discordapp.net/attachments/1365412596655853699/1365450102835249172/BANDEAUX_-_33.png",
-            "à vos votes": "https://media.discordapp.net/attachments/1365412596655853699/1365450176457609216/BANDEAUX_-_35.png",
-            "Installez-vous": "https://media.discordapp.net/attachments/1365412596655853699/1365450239045144576/BANDEAUX_-_36.png",
-            "on papote": "https://media.discordapp.net/attachments/1365412596655853699/1365450337854427267/BANDEAUX_-_37.png",
-            "à vos Bibles": "https://media.discordapp.net/attachments/1365412596655853699/1365450502476795945/BANDEAUX_-_39.png"
+            "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png"
         }
     },
-    loueAvecTonArt: {
-        title: "Loue avec ton art",
+    mondeEnDeclin: {
+        title: "Le Monde en Déclin",
         weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725770085040218/FICHES_SPECIFIQUES_PETIT_FORMAT_-_16.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725825047068722/FICHES_SPECIFIQUES_PETIT_FORMAT_-_17.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725866457567416/FICHES_SPECIFIQUES_PETIT_FORMAT_-_18.png"
-        }
-    },
-    chaineSacree: {
-        title: "Chaîne sacrée",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725911411851344/FICHES_SPECIFIQUES_PETIT_FORMAT_-_19.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725981528166450/FICHES_SPECIFIQUES_PETIT_FORMAT_-_20.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726016988465158/FICHES_SPECIFIQUES_PETIT_FORMAT_-_21.png"
-        }
-    },
-    savoirChretien: {
-        title: "Savoir chrétien",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726058002784767/FICHES_SPECIFIQUES_PETIT_FORMAT_-_22.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726094986149378/FICHES_SPECIFIQUES_PETIT_FORMAT_-_23.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726124882736641/FICHES_SPECIFIQUES_PETIT_FORMAT_-_24.png"
-        }
-    },
-    jePrefere: {
-        title: "Je préfère",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726155632450067/FICHES_SPECIFIQUES_PETIT_FORMAT_-_25.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726183903265536/FICHES_SPECIFIQUES_PETIT_FORMAT_-_26.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726215589114901/FICHES_SPECIFIQUES_PETIT_FORMAT_-_27.png"
-        }
-    },
-    jeDebats: {
-        title: "Je débats",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726250338652418/FICHES_SPECIFIQUES_PETIT_FORMAT_-_28.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726283172867072/FICHES_SPECIFIQUES_PETIT_FORMAT_-_29.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726313883936275/FICHES_SPECIFIQUES_PETIT_FORMAT_-_30.png"
-        }
-    },
-    composeTonChant: {
-        title: "Compose ton chant",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726345386018823/FICHES_SPECIFIQUES_PETIT_FORMAT_-_31.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726374519505411/FICHES_SPECIFIQUES_PETIT_FORMAT_-_32.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726412025523506/FICHES_SPECIFIQUES_PETIT_FORMAT_-_33.png"
-        }
-    },
-    priereEnChoeur: {
-        title: "Prière en chœur",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726445561549856/FICHES_SPECIFIQUES_PETIT_FORMAT_-_34.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726477503522300/FICHES_SPECIFIQUES_PETIT_FORMAT_-_35.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726504952314986/FICHES_SPECIFIQUES_PETIT_FORMAT_-_36.png"
-        }
-    },
-    quiSuisJeBiblique: {
-        title: "Qui suis-je biblique",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726536286921778/FICHES_SPECIFIQUES_PETIT_FORMAT_-_37.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726566499025000/FICHES_SPECIFIQUES_PETIT_FORMAT_-_38.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726598318859014/FICHES_SPECIFIQUES_PETIT_FORMAT_-_39.png"
-        }
-    },
-    comprendreApocalypse: {
-        title: "Comprendre l'apocalypse",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726630002579476/FICHES_SPECIFIQUES_PETIT_FORMAT_-_40.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726663403672848/FICHES_SPECIFIQUES_PETIT_FORMAT_-_41.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726700276018184/FICHES_SPECIFIQUES_PETIT_FORMAT_-_42.png"
-        }
-    },
-    bibleIllustree: {
-        title: "LA Bible illustrée",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726733322940924/FICHES_SPECIFIQUES_PETIT_FORMAT_-_43.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726763165978650/FICHES_SPECIFIQUES_PETIT_FORMAT_-_44.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726794945651970/FICHES_SPECIFIQUES_PETIT_FORMAT_-_45.png"
-        }
-    },
-    cinemaChretien: {
-        title: "Cinéma Chrétien",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726824389902396/FICHES_SPECIFIQUES_PETIT_FORMAT_-_46.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726860361834760/FICHES_SPECIFIQUES_PETIT_FORMAT_-_47.png",
-            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726891917857532/FICHES_SPECIFIQUES_PETIT_FORMAT_-_48.png"
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png"
         }
     }
 };
@@ -615,34 +513,14 @@ const gameCategories = {
         title: "Grille de lumière",
         buttons: {
             "Grille de lumière 1": "https://media.discordapp.net/attachments/1365412596655853699/1381746959072628826/PLATEAUX_CODES_SACRES_-_3.png",
-            "Grille de lumière 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747211351883867/PLATEAUX_CODES_SACRES_-_6.png",
-            "Grille de lumière 3": "https://media.discordapp.net/attachments/1365412596655853699/1381747610108432527/PLATEAUX_CODES_SACRES.png",
-            "Grille de lumière 4": "https://media.discordapp.net/attachments/1365412596655853699/1381747659450355836/PLATEAUX_CODES_SACRES_-_12.png",
-            "Grille de lumière 5": "https://media.discordapp.net/attachments/1365412596655853699/1381747879051395174/PLATEAUX_CODES_SACRES.png",
-            "Grille de lumière 6": "https://media.discordapp.net/attachments/1365412596655853699/1381748077844627617/PLATEAUX_CODES_SACRES_-_18.png",
-            "Grille de lumière 7": "https://media.discordapp.net/attachments/1365412596655853699/1381748456841810021/PLATEAUX_CODES_SACRES.png",
-            "Grille de lumière 8": "https://media.discordapp.net/attachments/1365412596655853699/1381748553675964709/PLATEAUX_CODES_SACRES_-_24.png",
-            "Grille de lumière 9": "https://media.discordapp.net/attachments/1365412596655853699/1381748623842218034/PLATEAUX_CODES_SACRES_-_28.png",
-            "Grille de lumière 10": "https://media.discordapp.net/attachments/1365412596655853699/1381748876700291162/PLATEAUX_CODES_SACRES.png"
+            "Grille de lumière 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747211351883867/PLATEAUX_CODES_SACRES_-_6.png"
         }
     },
     eclaireurs: {
         title: "Éclaireurs",
         buttons: {
             "Éclaireurs 1": "https://media.discordapp.net/attachments/1365412596655853699/1381747093592342528/PLATEAUX_CODES_SACRES_-_4.png",
-            "Éclaireurs 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747251466211559/PLATEAUX_CODES_SACRES_-_7.png",
-            "Éclaireurs 3": "https://media.discordapp.net/attachments/1365412596655853699/1381747367199510549/PLATEAUX_CODES_SACRES_-_10.png",
-            "Éclaireurs 4": "https://media.discordapp.net/attachments/1365412596655853699/1381747699107234003/PLATEAUX_CODES_SACRES_-_13.png",
-            "Éclaireurs 5": "https://media.discordapp.net/attachments/1365412596655853699/1381748030075568199/PLATEAUX_CODES_SACRES_-_16.png",
-            "Éclaireurs 6": "https://media.discordapp.net/attachments/1365412596655853699/1381748122304249896/PLATEAUX_CODES_SACRES_-_19.png",
-            "Éclaireurs 7": "https://media.discordapp.net/attachments/1365412596655853699/1381748505860767805/PLATEAUX_CODES_SACRES_-_22.png",
-            "Éclaireurs 8": "https://media.discordapp.net/attachments/1365412596655853699/1381748588476104835/PLATEAUX_CODES_SACRES_-_25.png",
-            "Éclaireurs 9": "https://media.discordapp.net/attachments/1365412596655853699/1381748653026312272/PLATEAUX_CODES_SACRES_-_27.png",
-            "Éclaireurs 10": "https://media.discordapp.net/attachments/1365412596655853699/1381749325507465226/PLATEAUX_CODES_SACRES_-_31.png",
-            "Éclaireurs 11": "https://media.discordapp.net/attachments/1365412596655853699/1381749407732469922/PLATEAUX_CODES_SACRES_-_36.png",
-            "Éclaireurs 12": "https://media.discordapp.net/attachments/1365412596655853699/1381749515937120257/PLATEAUX_CODES_SACRES_-_40.png",
-            "Éclaireurs 13": "https://media.discordapp.net/attachments/1365412596655853699/1381749593733071009/PLATEAUX_CODES_SACRES.png",
-            "Éclaireurs 14": "https://media.discordapp.net/attachments/1365412596655853699/1381749662737891459/PLATEAUX_CODES_SACRES_-_45.png"
+            "Éclaireurs 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747251466211559/PLATEAUX_CODES_SACRES_-_7.png"
         }
     }
 };
@@ -670,11 +548,13 @@ const elements = {
     sendBtn: document.getElementById('sendBtn'),
     sendError: document.getElementById('sendError'),
     sendSuccess: document.getElementById('sendSuccess'),
+    sendWarning: document.getElementById('sendWarning'),
     categoryBadge: document.getElementById('categoryBadge'),
     weekBadge: document.getElementById('weekBadge'),
     channelBadge: document.getElementById('channelBadge'),
-    botStatus: document.getElementById('botStatus'),
-    botStatusText: document.getElementById('botStatusText')
+    debugInfo: document.getElementById('debugInfo'),
+    debugContent: document.getElementById('debugContent'),
+    methodStatus: document.getElementById('methodStatus')
 };
 
 // Fonctions utilitaires
@@ -691,6 +571,19 @@ function showError(message) {
         elements.authError.textContent = message;
         showElement(elements.authError);
     }
+}
+
+function addMethodStatus(message, type = 'trying') {
+    const statusDiv = document.createElement('div');
+    statusDiv.className = `method-status method-${type}`;
+    statusDiv.textContent = message;
+    elements.methodStatus.appendChild(statusDiv);
+    showElement(elements.methodStatus);
+}
+
+function updateDebug(info) {
+    elements.debugContent.innerHTML = JSON.stringify(info, null, 2);
+    showElement(elements.debugInfo);
 }
 
 function showAuthScreen() {
@@ -743,6 +636,9 @@ function resetSelection() {
     selectedImage = '';
     hideElement(elements.previewView);
     hideElement(elements.channelView);
+    hideElement(elements.debugInfo);
+    hideElement(elements.methodStatus);
+    elements.methodStatus.innerHTML = '';
     updateBadges();
     updateSendButton();
 }
@@ -762,7 +658,7 @@ function updateBadges() {
 function updateSendButton() {
     const canSend = selectedImage && selectedChannel && !isLoading;
     elements.sendBtn.disabled = !canSend;
-    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer dans le salon sélectionné';
+    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer VRAIMENT dans Discord';
 }
 
 function showWeekButtons(categoryKey, isGame = false) {
@@ -821,7 +717,7 @@ function selectWeek(week, imageUrl) {
     updateSendButton();
 }
 
-// FONCTION D'ENVOI VERS DISCORD - UN BOT POUR TOUS LES SALONS
+// FONCTION D'ENVOI RÉEL VERS DISCORD
 async function sendToDiscord() {
     if (!selectedImage || !selectedChannel) return;
 
@@ -829,71 +725,106 @@ async function sendToDiscord() {
     updateSendButton();
     hideElement(elements.sendError);
     hideElement(elements.sendSuccess);
+    hideElement(elements.sendWarning);
+    elements.methodStatus.innerHTML = '';
 
-    // Mettre à jour le statut du bot
-    elements.botStatus.className = 'status-indicator status-offline';
-    elements.botStatusText.textContent = 'Envoi en cours...';
+    const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : gameCategories[selectedGame]?.title;
+    const content = `**${categoryTitle}** - ${selectedWeek}`;
+    
+    updateDebug({
+        channel: selectedChannel,
+        channelName: selectedChannelName,
+        image: selectedImage,
+        content: content,
+        token: DISCORD_BOT_TOKEN ? 'Présent' : 'Manquant'
+    });
+
+    console.log('🚀 ENVOI RÉEL vers Discord:', {
+        channel: selectedChannel,
+        channelName: selectedChannelName,
+        image: selectedImage,
+        content: content
+    });
 
     try {
-        const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : gameCategories[selectedGame]?.title;
-        const content = `**${categoryTitle}** - ${selectedWeek}`;
+        addMethodStatus('🔄 Méthode 1: Envoi direct via Discord API...', 'trying');
+
+        // Télécharger l'image d'abord
+        const imageResponse = await fetch(selectedImage);
+        if (!imageResponse.ok) {
+            throw new Error(`Erreur téléchargement image: ${imageResponse.status}`);
+        }
+        const imageBlob = await imageResponse.blob();
         
-        console.log('🚀 Envoi vers le salon:', {
-            channel: selectedChannel,
-            channelName: selectedChannelName,
-            image: selectedImage,
-            content: content
+        addMethodStatus('✅ Image téléchargée avec succès', 'success');
+
+        // Créer FormData pour Discord
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('files[0]', imageBlob, 'image.png');
+
+        // Envoyer à Discord
+        const discordResponse = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bot ${DISCORD_BOT_TOKEN}`
+            },
+            body: formData
         });
 
-        // Méthode 1: Essayer avec un proxy CORS
-        try {
-            const proxyUrl = 'https://api.allorigins.win/raw?url=';
-            const discordApiUrl = `https://discord.com/api/v10/channels/${selectedChannel}/messages`;
+        if (discordResponse.ok) {
+            addMethodStatus('✅ Message envoyé avec succès !', 'success');
             
-            // Télécharger l'image
-            const imageResponse = await fetch(selectedImage);
-            const imageBlob = await imageResponse.blob();
-            
-            // Créer FormData
-            const formData = new FormData();
-            formData.append('content', content);
-            formData.append('files[0]', imageBlob, 'image.png');
-            
-            // Essayer d'envoyer directement (peut échouer à cause de CORS)
-            const response = await fetch(discordApiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bot ${DISCORD_BOT_TOKEN}`
-                },
-                body: formData
-            });
+            // Sauvegarder le log
+            await saveLog(
+                'Message envoyé avec succès',
+                `Salon: ${selectedChannelName} (${selectedChannel}) | Catégorie: ${categoryTitle} | Option: ${selectedWeek}`
+            );
 
-            if (response.ok) {
-                throw new Error('Success via direct API');
+            elements.sendSuccess.textContent = `✅ Message envoyé avec succès dans "${selectedChannelName}" !`;
+            showElement(elements.sendSuccess);
+
+        } else {
+            const errorText = await discordResponse.text();
+            addMethodStatus(`❌ Erreur Discord API: ${discordResponse.status}`, 'failed');
+            
+            // Essayer méthode alternative
+            addMethodStatus('🔄 Méthode 2: Tentative avec proxy CORS...', 'trying');
+            
+            try {
+                // Utiliser un proxy CORS
+                const proxyResponse = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(`https://discord.com/api/v10/channels/${selectedChannel}/messages`), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bot ${DISCORD_BOT_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        embeds: [{
+                            title: `${categoryTitle} - ${selectedWeek}`,
+                            image: { url: selectedImage },
+                            color: 0xd4af37
+                        }]
+                    })
+                });
+
+                if (proxyResponse.ok) {
+                    addMethodStatus('✅ Envoi réussi via proxy !', 'success');
+                    elements.sendSuccess.textContent = `✅ Message envoyé via proxy dans "${selectedChannelName}" !`;
+                    showElement(elements.sendSuccess);
+                } else {
+                    throw new Error(`Proxy failed: ${proxyResponse.status}`);
+                }
+            } catch (proxyError) {
+                addMethodStatus('❌ Proxy CORS échoué', 'failed');
+                throw new Error(`Discord API: ${discordResponse.status} - ${errorText}`);
             }
-        } catch (directError) {
-            console.log('API directe échouée, simulation d\'envoi...');
         }
 
-        // Méthode 2: Simulation d'envoi réussi (pour contourner CORS)
-        console.log('🔄 Simulation d\'envoi réussi...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Sauvegarder le log
-        await saveLog(
-            'Message envoyé (simulé)',
-            `Salon: ${selectedChannelName} (${selectedChannel}) | Catégorie: ${categoryTitle} | Option: ${selectedWeek}`
-        );
-
-        elements.sendSuccess.textContent = `✅ Message envoyé avec succès dans "${selectedChannelName}" !`;
-        showElement(elements.sendSuccess);
-
-        // Mettre à jour le statut du bot
-        elements.botStatus.className = 'status-indicator status-online';
-        elements.botStatusText.textContent = 'Message envoyé avec succès !';
-
     } catch (error) {
-        console.error('❌ Erreur:', error);
+        console.error('❌ Erreur complète:', error);
+        addMethodStatus(`❌ Toutes les méthodes ont échoué: ${error.message}`, 'failed');
         
         await saveLog(
             'Erreur envoi message',
@@ -903,18 +834,18 @@ async function sendToDiscord() {
         elements.sendError.textContent = `❌ Erreur: ${error.message}`;
         showElement(elements.sendError);
 
-        // Mettre à jour le statut du bot
-        elements.botStatus.className = 'status-indicator status-offline';
-        elements.botStatusText.textContent = 'Erreur lors de l\'envoi';
+        // Afficher un avertissement avec des solutions
+        elements.sendWarning.innerHTML = `
+            <strong>🔧 Solutions possibles :</strong><br>
+            1. Vérifiez que le bot a les permissions dans le salon<br>
+            2. Vérifiez que l'ID du salon est correct<br>
+            3. Le token du bot est peut-être expiré<br>
+            4. Problème de CORS - essayez depuis un serveur
+        `;
+        showElement(elements.sendWarning);
     } finally {
         isLoading = false;
         updateSendButton();
-        
-        // Remettre le statut normal après 3 secondes
-        setTimeout(() => {
-            elements.botStatus.className = 'status-indicator status-online';
-            elements.botStatusText.textContent = 'Connecté et prêt à envoyer dans tous les salons';
-        }, 3000);
     }
 }
 
@@ -1040,7 +971,7 @@ elements.backBtn.addEventListener('click', () => {
 updateBadges();
 updateSendButton();
 
-console.log('🎉 Application multi-salons prête avec UN SEUL BOT !');
+console.log('🎉 Application RÉELLE prête !');
     </script>
 </body>
 </html>
