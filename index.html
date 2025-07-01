@@ -834,7 +834,13 @@
     }, 10000); // 10 secondes max
 
     try {
+        let authTimeout = setTimeout(() => {
+            console.log('⏰ Timeout auth, affichage manuel de l\'écran d\'auth');
+            showAuthScreen();
+        }, 8000);
+
         auth.onAuthStateChanged(async (user) => {
+            clearTimeout(authTimeout); // Annuler le timeout
             console.log('🔄 Changement d\'état d\'authentification:', user ? 'Connecté' : 'Déconnecté');
             
             if (user) {
@@ -850,6 +856,9 @@
                     console.log('💾 Pseudo Discord récupéré:', savedPseudo);
                 }
                 showMainPanel();
+
+                loadAuthorizedUsers();
+                loadLogs();
             } else {
                 console.log('🚪 Aucun utilisateur connecté');
                 showAuthScreen();
@@ -858,6 +867,72 @@
     } catch (error) {
         console.error('❌ Erreur observer auth:', error);
         showAuthScreen();
+    }
+
+    async function loadAuthorizedUsers() {
+        if (!isAdmin && !isModo) return;
+        
+        try {
+            elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-gray-500">Chargement...</div>';
+            
+            const usersSnapshot = await db.collection('authorized_users').orderBy('pseudo').get();
+            elements.authorizedUsersList.innerHTML = '';
+            
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-item');
+                userItem.innerHTML = `
+                    <div>${userData.pseudo}</div>
+                    <button class="btn btn-danger btn-sm" data-id="${doc.id}">Supprimer</button>
+                `;
+                elements.authorizedUsersList.appendChild(userItem);
+                
+                userItem.querySelector('button').addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.id;
+                    console.log('🗑️ Suppression utilisateur:', userId);
+                    try {
+                        await db.collection('authorized_users').doc(userId).delete();
+                        loadAuthorizedUsers(); // Refresh
+                    } catch (error) {
+                        console.error('Erreur suppression utilisateur:', error);
+                        alert('Erreur suppression utilisateur.');
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Erreur chargement utilisateurs:', error);
+            elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-red-600">Erreur de chargement. Vérifiez vos permissions Firestore.</div>';
+        }
+    }
+
+    async function loadLogs() {
+        if (!isAdmin && !isModo) return;
+        
+        try {
+            elements.logs.innerHTML = 'Chargement des logs...';
+            
+            const logsSnapshot = await db.collection('logs')
+                .orderBy('timestamp', 'desc')
+                .limit(50)
+                .get();
+            
+            elements.logs.innerHTML = '';
+            
+            logsSnapshot.forEach(doc => {
+                const logData = doc.data();
+                const logEntry = document.createElement('div');
+                logEntry.classList.add('log-entry');
+                logEntry.innerHTML = `
+                    <div class="text-sm text-gray-600">${new Date(logData.timestamp.seconds * 1000).toLocaleString()}</div>
+                    <div>${logData.message}</div>
+                `;
+                elements.logs.appendChild(logEntry);
+            });
+        } catch (error) {
+            console.error('Erreur chargement logs:', error);
+            elements.logs.innerHTML = 'Erreur de chargement des logs. Vérifiez vos permissions Firestore.';
+        }
     }
 
     // Event listeners de base
