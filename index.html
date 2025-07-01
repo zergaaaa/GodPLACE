@@ -547,31 +547,26 @@
             </div>
         </div>
 
-        <!-- Server Selection -->
-        <div id="serverView" class="card hidden">
+        <!-- Server and Channel Selection -->
+        <div id="serverChannelView" class="card hidden">
             <div class="card-header">
-                <h2 class="card-title">4. Choisissez un serveur Discord</h2>
-                <p class="card-description">Sélectionnez le serveur Discord cible</p>
-            </div>
-            <div class="card-content">
-                <input type="text" id="serverIdInput" class="form-input mb-4" placeholder="ID du serveur Discord (ex: 1234567890123456789)">
-                <button id="loadServerBtn" class="btn btn-primary w-full">
-                    🔍 Charger les salons du serveur
-                </button>
-                <div id="serverError" class="alert alert-error hidden"></div>
-            </div>
-        </div>
-
-        <!-- Channel Selection -->
-        <div id="channelView" class="card hidden">
-            <div class="card-header">
-                <h2 class="card-title">5. Choisissez un salon</h2>
-                <p class="card-description">Sélectionnez le salon où envoyer le contenu</p>
+                <h2 class="card-title">4. Choisissez un salon Discord</h2>
+                <p class="card-description">Sélectionnez le serveur et le salon où envoyer le contenu</p>
             </div>
             <div class="card-content space-y-4">
-                <div id="channelsList" class="max-h-64 overflow-y-auto">
-                    <!-- Les salons seront chargés ici -->
+                <button id="loadAllServersBtn" class="btn btn-primary w-full">
+                    🔍 Charger tous les serveurs et salons disponibles
+                </button>
+                
+                <div id="serverChannelError" class="alert alert-error hidden"></div>
+                
+                <!-- Liste des serveurs et salons -->
+                <div id="serverChannelsList" class="hidden">
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Les serveurs et salons seront chargés ici -->
+                    </div>
                 </div>
+                
                 <button id="sendBtn" class="btn btn-primary w-full" disabled>
                     📤 Envoyer au bot Discord
                 </button>
@@ -822,7 +817,10 @@ const elements = {
     gamesView: document.getElementById('gamesView'),
     weekView: document.getElementById('weekView'),
     previewView: document.getElementById('previewView'),
-    serverView: document.getElementById('serverView'),
+    serverChannelView: document.getElementById('serverChannelView'),
+    loadAllServersBtn: document.getElementById('loadAllServersBtn'),
+    serverChannelError: document.getElementById('serverChannelError'),
+    serverChannelsList: document.getElementById('serverChannelsList'),
     serverIdInput: document.getElementById('serverIdInput'),
     loadServerBtn: document.getElementById('loadServerBtn'),
     serverError: document.getElementById('serverError'),
@@ -929,7 +927,7 @@ function hideAllViews() {
     hideElement(elements.gamesView);
     hideElement(elements.weekView);
     hideElement(elements.previewView);
-    hideElement(elements.serverView);
+    hideElement(elements.serverChannelView);
     hideElement(elements.channelView);
 }
 
@@ -959,7 +957,7 @@ function resetSelection() {
     selectedServerName = '';
     selectedImage = '';
     hideElement(elements.previewView);
-    hideElement(elements.serverView);
+    hideElement(elements.serverChannelView);
     hideElement(elements.channelView);
     updateBadges();
     updateSendButton();
@@ -1037,117 +1035,147 @@ function selectWeek(week, imageUrl) {
 
     elements.previewImage.src = imageUrl;
     showElement(elements.previewView);
-    showElement(elements.serverView);
+    showElement(elements.serverChannelView); // Changé ici
     updateBadges();
     updateSendButton();
 }
 
 // Fonction pour charger les salons d'un serveur
-async function loadServerChannels() {
-    const serverId = elements.serverIdInput.value.trim();
-    if (!serverId) {
-        elements.serverError.textContent = 'Veuillez entrer un ID de serveur';
-        showElement(elements.serverError);
-        return;
-    }
-
-    elements.loadServerBtn.disabled = true;
-    elements.loadServerBtn.innerHTML = '🔄 Chargement...';
-    hideElement(elements.serverError);
+async function loadAllServersAndChannels() {
+    elements.loadAllServersBtn.disabled = true;
+    elements.loadAllServersBtn.innerHTML = '🔄 Chargement en cours...';
+    hideElement(elements.serverChannelError);
 
     try {
-        // Récupérer les informations du serveur
-        const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-            }
-        });
-
-        if (!guildResponse.ok) {
-            if (guildResponse.status === 403) {
-                throw new Error('Le bot n\'a pas accès à ce serveur');
-            } else if (guildResponse.status === 404) {
-                throw new Error('Serveur introuvable');
-            } else {
-                throw new Error(`Erreur ${guildResponse.status}: ${guildResponse.statusText}`);
-            }
-        }
-
-        const guild = await guildResponse.json();
-        selectedServerId = serverId;
-        selectedServerName = guild.name;
-
-        // Récupérer les salons du serveur
-        const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}/channels`, {
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-            }
-        });
-
-        if (!channelsResponse.ok) {
-            throw new Error(`Erreur lors de la récupération des salons: ${channelsResponse.status}`);
-        }
-
-        const channels = await channelsResponse.json();
+        console.log('🔍 Récupération de tous les serveurs...');
         
-        // Filtrer seulement les salons texte (type 0) et les fils de discussion (type 11)
-        availableChannels = channels.filter(channel => 
-            channel.type === 0 || channel.type === 5 || channel.type === 11
-        ).sort((a, b) => a.name.localeCompare(b.name));
+        // Récupérer tous les serveurs où le bot est présent
+        const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: {
+                'Authorization': `Bot ${BOT_TOKEN}`,
+            }
+        });
 
-        displayChannels();
-        showElement(elements.channelView);
-        updateBadges();
+        if (!guildsResponse.ok) {
+            throw new Error(`Erreur lors de la récupération des serveurs: ${guildsResponse.status}`);
+        }
+
+        const guilds = await guildsResponse.json();
+        console.log(`✅ ${guilds.length} serveurs trouvés`);
+
+        const serverChannelsList = document.getElementById('serverChannelsList');
+        serverChannelsList.innerHTML = '';
+
+        // Pour chaque serveur, récupérer ses salons
+        for (const guild of guilds) {
+            try {
+                console.log(`📡 Chargement des salons pour: ${guild.name}`);
+                
+                const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${guild.id}/channels`, {
+                    headers: {
+                        'Authorization': `Bot ${BOT_TOKEN}`,
+                    }
+                });
+
+                if (!channelsResponse.ok) {
+                    console.warn(`⚠️ Impossible de charger les salons pour ${guild.name}: ${channelsResponse.status}`);
+                    continue;
+                }
+
+                const channels = await channelsResponse.json();
+                
+                // Filtrer seulement les salons texte
+                const textChannels = channels.filter(channel => 
+                    channel.type === 0 || channel.type === 5 || channel.type === 11
+                ).sort((a, b) => a.name.localeCompare(b.name));
+
+                if (textChannels.length > 0) {
+                    createServerSection(guild, textChannels, serverChannelsList);
+                }
+
+            } catch (error) {
+                console.error(`❌ Erreur pour le serveur ${guild.name}:`, error);
+            }
+        }
+
+        showElement(elements.serverChannelsList);
+        console.log('✅ Chargement terminé');
 
     } catch (error) {
-        console.error('Erreur chargement serveur:', error);
-        elements.serverError.textContent = `❌ ${error.message}`;
-        showElement(elements.serverError);
+        console.error('❌ Erreur générale:', error);
+        elements.serverChannelError.textContent = `❌ ${error.message}`;
+        showElement(elements.serverChannelError);
     } finally {
-        elements.loadServerBtn.disabled = false;
-        elements.loadServerBtn.innerHTML = '🔍 Charger les salons du serveur';
+        elements.loadAllServersBtn.disabled = false;
+        elements.loadAllServersBtn.innerHTML = '🔍 Recharger les serveurs et salons';
     }
 }
 
-function displayChannels() {
-    elements.channelsList.innerHTML = '';
-
-    if (availableChannels.length === 0) {
-        elements.channelsList.innerHTML = '<div class="p-4 text-center text-gray-500">Aucun salon accessible trouvé</div>';
-        return;
-    }
-
-    availableChannels.forEach(channel => {
+function createServerSection(guild, channels, container) {
+    const serverDiv = document.createElement('div');
+    serverDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
+    
+    const serverHeader = document.createElement('div');
+    serverHeader.className = 'flex items-center justify-between mb-3 cursor-pointer';
+    serverHeader.onclick = () => toggleServerChannels(guild.id);
+    
+    serverHeader.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <div class="text-lg">🏰</div>
+            <div>
+                <div class="font-semibold text-gray-800">${guild.name}</div>
+                <div class="text-sm text-gray-500">${channels.length} salon(s) disponible(s)</div>
+            </div>
+        </div>
+        <div class="text-gray-400" id="toggle-${guild.id}">▼</div>
+    `;
+    
+    const channelsContainer = document.createElement('div');
+    channelsContainer.id = `channels-${guild.id}`;
+    channelsContainer.className = 'space-y-2 hidden';
+    
+    channels.forEach(channel => {
         const channelDiv = document.createElement('div');
-        channelDiv.className = 'channel-item';
-        channelDiv.onclick = () => selectChannel(channel.id, channel.name);
+        channelDiv.className = 'channel-item ml-6';
+        channelDiv.onclick = () => selectChannelFromList(channel.id, channel.name, guild.id, guild.name);
 
         const typeIcon = getChannelTypeIcon(channel.type);
         
         channelDiv.innerHTML = `
             <span class="channel-type">${typeIcon}</span>
             <span class="flex-1">${channel.name}</span>
+            <span class="text-xs text-gray-400">${channel.id}</span>
         `;
 
-        elements.channelsList.appendChild(channelDiv);
+        channelsContainer.appendChild(channelDiv);
     });
+    
+    serverDiv.appendChild(serverHeader);
+    serverDiv.appendChild(channelsContainer);
+    container.appendChild(serverDiv);
 }
 
-function getChannelTypeIcon(type) {
-    switch (type) {
-        case 0: return '#'; // Salon texte
-        case 5: return '📢'; // Salon d'annonces
-        case 11: return '🧵'; // Fil de discussion
-        default: return '#';
+function toggleServerChannels(serverId) {
+    const channelsContainer = document.getElementById(`channels-${serverId}`);
+    const toggleIcon = document.getElementById(`toggle-${serverId}`);
+    
+    if (channelsContainer.classList.contains('hidden')) {
+        channelsContainer.classList.remove('hidden');
+        toggleIcon.textContent = '▲';
+    } else {
+        channelsContainer.classList.add('hidden');
+        toggleIcon.textContent = '▼';
     }
 }
 
-function selectChannel(channelId, channelName) {
+function selectChannelFromList(channelId, channelName, serverId, serverName) {
     selectedChannel = channelId;
     selectedChannelName = channelName;
+    selectedServerId = serverId;
+    selectedServerName = serverName;
 
     // Mettre à jour l'affichage
-    elements.channelsList.querySelectorAll('.channel-item').forEach(item => {
+    document.querySelectorAll('.channel-item').forEach(item => {
         item.classList.remove('selected');
     });
 
@@ -1155,6 +1183,8 @@ function selectChannel(channelId, channelName) {
     
     updateBadges();
     updateSendButton();
+    
+    console.log(`✅ Salon sélectionné: ${channelName} (${channelId}) sur ${serverName} (${serverId})`);
 }
 
 async function sendToDiscord() {
@@ -1486,7 +1516,7 @@ elements.gamesView.addEventListener('click', (e) => {
     }
 });
 
-elements.loadServerBtn.addEventListener('click', loadServerChannels);
+elements.loadAllServersBtn.addEventListener('click', loadAllServersAndChannels);
 elements.sendBtn.addEventListener('click', sendToDiscord);
 elements.addUserBtn.addEventListener('click', addAuthorizedUser);
 
@@ -1516,3 +1546,5 @@ window.removeAuthorizedUser = removeAuthorizedUser;
 
 console.log('🎉 Initialisation terminée');
 </script>
+
+</existing_code>
