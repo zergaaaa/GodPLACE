@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godplace Panel - Debug</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: black;
+            color: lime;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            max-width: 300px;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #d4af37;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { display: none !important; }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #d4af37;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    
+    <!-- Debug Info -->
+    <div id="debugInfo" class="debug-info">
+        <div>🔍 DIAGNOSTIC EN COURS...</div>
+        <div id="debugLog"></div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="min-h-screen flex items-center justify-center">
+        <div class="text-center">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-gray-600 text-lg">Diagnostic en cours...</p>
+            <p class="text-gray-500 text-sm" id="loadingStatus">Initialisation...</p>
+        </div>
+    </div>
+
+    <!-- Emergency Auth Screen -->
+    <div id="emergencyAuth" class="min-h-screen flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <h1 class="text-2xl font-bold text-red-600 mb-4">🚨 Mode d'urgence</h1>
+            <p class="text-gray-600 mb-4">Firebase ne répond pas. Connexion en mode dégradé.</p>
+            
+            <form id="emergencyForm">
+                <input type="email" id="emergencyEmail" class="form-input" placeholder="Email" required>
+                <input type="password" id="emergencyPassword" class="form-input" placeholder="Mot de passe" required>
+                <input type="text" id="emergencyDiscord" class="form-input" placeholder="Pseudo Discord" required>
+                <button type="submit" class="btn btn-primary w-full">Connexion d'urgence</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" class="min-h-screen flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <h1 class="text-2xl font-bold text-yellow-600 mb-4">🔐 Godplace Panel</h1>
+            
+            <form id="loginForm">
+                <input type="email" id="loginEmail" class="form-input" placeholder="Email" required>
+                <input type="password" id="loginPassword" class="form-input" placeholder="Mot de passe" required>
+                <input type="text" id="loginDiscord" class="form-input" placeholder="Pseudo Discord" required>
+                <button type="submit" class="btn btn-primary w-full">Se connecter</button>
+            </form>
+            
+            <div id="authError" class="text-red-600 mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="mainPanel" class="max-w-4xl mx-auto p-6 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-yellow-600">Godplace Panel</h1>
+                <button id="logoutBtn" class="btn btn-danger">Déconnexion</button>
+            </div>
+            
+            <div class="text-center">
+                <p class="text-lg text-gray-600">✅ Connexion réussie !</p>
+                <p id="userInfo" class="text-gray-500"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let debugLog = [];
+        let currentStep = 0;
+        let firebaseLoaded = false;
+        let authInitialized = false;
+        
+        // Fonction de debug
+        function addDebugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            
+            console.log(logEntry);
+            
+            const debugElement = document.getElementById('debugLog');
+            if (debugElement) {
+                debugElement.innerHTML = debugLog.slice(-10).join('<br>');
+            }
+            
+            // Mettre à jour le statut de chargement
+            const statusElement = document.getElementById('loadingStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+        }
+        
+        // Fonction pour afficher un écran
+        function showScreen(screenId) {
+            const screens = ['loadingScreen', 'emergencyAuth', 'authScreen', 'mainPanel'];
+            screens.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === screenId) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            });
+            addDebugLog(`Affichage écran: ${screenId}`);
+        }
+        
+        // Étape 1: Vérification de base
+        addDebugLog('🚀 Démarrage du diagnostic');
+        addDebugLog('📄 DOM chargé: ' + (document.readyState === 'complete' ? 'OUI' : 'NON'));
+        
+        // Étape 2: Test de connexion internet
+        function testInternetConnection() {
+            addDebugLog('🌐 Test connexion internet...');
+            
+            fetch('https://www.google.com/favicon.ico', { 
+                mode: 'no-cors',
+                cache: 'no-cache'
+            })
+            .then(() => {
+                addDebugLog('✅ Connexion internet OK');
+                loadFirebase();
+            })
+            .catch(() => {
+                addDebugLog('❌ Pas de connexion internet');
+                setTimeout(() => showScreen('emergencyAuth'), 2000);
+            });
+        }
+        
+        // Étape 3: Chargement Firebase
+        function loadFirebase() {
+            addDebugLog('🔥 Chargement Firebase...');
+            
+            // Créer les scripts Firebase
+            const scripts = [
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
+                'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js'
+            ];
+            
+            let loadedScripts = 0;
+            
+            scripts.forEach((src, index) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    loadedScripts++;
+                    addDebugLog(`✅ Script ${index + 1}/${scripts.length} chargé`);
+                    
+                    if (loadedScripts === scripts.length) {
+                        initializeFirebase();
+                    }
+                };
+                script.onerror = () => {
+                    addDebugLog(`❌ Erreur script ${index + 1}`);
+                    setTimeout(() => showScreen('emergencyAuth'), 2000);
+                };
+                document.head.appendChild(script);
+            });
+            
+            // Timeout de sécurité
+            setTimeout(() => {
+                if (loadedScripts < scripts.length) {
+                    addDebugLog('⏰ Timeout Firebase, mode urgence');
+                    showScreen('emergencyAuth');
+                }
+            }, 10000);
+        }
+        
+        // Étape 4: Initialisation Firebase
+        function initializeFirebase() {
+            addDebugLog('🔧 Initialisation Firebase...');
+            
+            if (typeof firebase === 'undefined') {
+                addDebugLog('❌ Firebase non disponible');
+                showScreen('emergencyAuth');
+                return;
+            }
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyDuY1T6HaxfDbEcZZYOrpDcD5LPNUTmeUc",
+                authDomain: "godplace-dea67.firebaseapp.com",
+                projectId: "godplace-dea67",
+                storageBucket: "godplace-dea67.firebasestorage.app",
+                messagingSenderId: "774010087004",
+                appId: "1:774010087004:web:31346dfbc1b2adfed2e899",
+                measurementId: "G-HNXY5FDSZK"
+            };
+            
+            try {
+                firebase.initializeApp(firebaseConfig);
+                addDebugLog('✅ Firebase initialisé');
+                firebaseLoaded = true;
+                setupAuth();
+            } catch (error) {
+                addDebugLog('❌ Erreur init Firebase: ' + error.message);
+                showScreen('emergencyAuth');
+            }
+        }
+        
+        // Étape 5: Configuration authentification
+        function setupAuth() {
+            addDebugLog('🔐 Configuration auth...');
+            
+            try {
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                addDebugLog('✅ Auth et Firestore OK');
+                
+                // Observer d'authentification
+                auth.onAuthStateChanged((user) => {
+                    addDebugLog('👤 État auth: ' + (user ? 'Connecté' : 'Déconnecté'));
+                    
+                    if (user) {
+                        showMainPanel(user);
+                    } else {
+                        showScreen('authScreen');
+                    }
+                    
+                    authInitialized = true;
+                });
+                
+                // Timeout de sécurité pour l'auth
+                setTimeout(() => {
+                    if (!authInitialized) {
+                        addDebugLog('⏰ Timeout auth, affichage manuel');
+                        showScreen('authScreen');
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                addDebugLog('❌ Erreur setup auth: ' + error.message);
+                showScreen('emergencyAuth');
+            }
+        }
+        
+        // Affichage du panneau principal
+        function showMainPanel(user) {
+            showScreen('mainPanel');
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.textContent = `Connecté en tant que: ${user.email}`;
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            addDebugLog('📄 DOM ready');
+            
+            // Formulaire de connexion normal
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    addDebugLog('🔐 Tentative connexion...');
+                    
+                    if (!firebaseLoaded) {
+                        addDebugLog('❌ Firebase non chargé');
+                        return;
+                    }
+                    
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    
+                    try {
+                        const auth = firebase.auth();
+                        await auth.signInWithEmailAndPassword(email, password);
+                        addDebugLog('✅ Connexion réussie');
+                    } catch (error) {
+                        addDebugLog('❌ Erreur connexion: ' + error.message);
+                        const errorElement = document.getElementById('authError');
+                        if (errorElement) {
+                            errorElement.textContent = error.message;
+                            errorElement.classList.remove('hidden');
+                        }
+                    }
+                });
+            }
+            
+            // Formulaire d'urgence
+            const emergencyForm = document.getElementById('emergencyForm');
+            if (emergencyForm) {
+                emergencyForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    addDebugLog('🚨 Connexion d\'urgence');
+                    
+                    const email = document.getElementById('emergencyEmail').value;
+                    
+                    // Simulation de connexion d'urgence
+                    if (email.includes('@')) {
+                        const fakeUser = { email: email };
+                        showMainPanel(fakeUser);
+                    } else {
+                        alert('Email invalide');
+                    }
+                });
+            }
+            
+            // Bouton de déconnexion
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    addDebugLog('🚪 Déconnexion');
+                    if (firebaseLoaded) {
+                        firebase.auth().signOut();
+                    } else {
+                        showScreen('authScreen');
+                    }
+                });
+            }
+            
+            // Démarrer le diagnostic
+            setTimeout(testInternetConnection, 1000);
+        });
+        
+        // Timeout global de sécurité
+        setTimeout(() => {
+            if (document.getElementById('loadingScreen') && !document.getElementById('loadingScreen').classList.contains('hidden')) {
+                addDebugLog('⏰ TIMEOUT GLOBAL - Affichage forcé');
+                showScreen('emergencyAuth');
+            }
+        }, 30000); // 30 secondes max
+        
+        addDebugLog('🎯 Script chargé');
+    </script>
+</body>
+</html>
