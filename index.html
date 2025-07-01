@@ -574,6 +574,30 @@
             </div>
         </div>
 
+        <!-- Token Configuration -->
+        <div id="tokenConfigView" class="card">
+            <div class="card-header">
+                <h2 class="card-title">🔑 Configuration du Token Discord</h2>
+                <p class="card-description">Entrez le token de votre bot Discord pour accéder aux serveurs</p>
+            </div>
+            <div class="card-content space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Token du Bot Discord</label>
+                    <input type="password" id="botTokenInput" class="form-input" placeholder="Votre token de bot Discord">
+                    <p class="text-xs text-gray-500 mt-1">
+                        📋 Comment obtenir votre token : 
+                        <a href="https://discord.com/developers/applications" target="_blank" class="text-blue-600 underline">
+                            Discord Developer Portal
+                        </a> → Votre App → Bot → Token
+                    </p>
+                </div>
+                <button id="saveTokenBtn" class="btn btn-primary w-full">
+                    💾 Sauvegarder le Token
+                </button>
+                <div id="tokenStatus" class="text-center text-sm hidden"></div>
+            </div>
+        </div>
+
         <!-- Status Badges -->
         <div class="flex flex-wrap gap-2 justify-center">
             <span id="categoryBadge" class="badge badge-inactive">Catégorie: Non sélectionnée</span>
@@ -614,8 +638,8 @@ const MODO_EMAILS = [
     "modo2@example.com"
 ];
 
-// ⚠️ REMPLACEZ PAR VOTRE VRAI TOKEN DE BOT
-const BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c';
+// ⚠️ Le token sera demandé à l'utilisateur
+let BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c';
 
 // Variables globales
 let currentUser = null;
@@ -838,7 +862,10 @@ const elements = {
     categoryBadge: document.getElementById('categoryBadge'),
     weekBadge: document.getElementById('weekBadge'),
     serverBadge: document.getElementById('serverBadge'),
-    channelBadge: document.getElementById('channelBadge')
+    channelBadge: document.getElementById('channelBadge'),
+    botTokenInput: document.getElementById('botTokenInput'),
+    saveTokenBtn: document.getElementById('saveTokenBtn'),
+    tokenStatus: document.getElementById('tokenStatus')
 };
 
 // Fonctions utilitaires
@@ -1042,6 +1069,13 @@ function selectWeek(week, imageUrl) {
 
 // Fonction pour charger les salons d'un serveur
 async function loadAllServersAndChannels() {
+    // Vérifier si le token est configuré
+    if (!BOT_TOKEN) {
+        elements.serverChannelError.textContent = '❌ Veuillez d\'abord configurer votre token Discord ci-dessus';
+        showElement(elements.serverChannelError);
+        return;
+    }
+
     elements.loadAllServersBtn.disabled = true;
     elements.loadAllServersBtn.innerHTML = '🔄 Chargement en cours...';
     hideElement(elements.serverChannelError);
@@ -1049,6 +1083,20 @@ async function loadAllServersAndChannels() {
     try {
         console.log('🔍 Récupération de tous les serveurs...');
         
+        // Test du token d'abord
+        const testResponse = await fetch('https://discord.com/api/v10/users/@me', {
+            headers: {
+                'Authorization': `Bot ${BOT_TOKEN}`,
+            }
+        });
+
+        if (!testResponse.ok) {
+            if (testResponse.status === 401) {
+                throw new Error('Token invalide ou expiré. Vérifiez votre token Discord.');
+            }
+            throw new Error(`Erreur d'authentification: ${testResponse.status}`);
+        }
+
         // Récupérer tous les serveurs où le bot est présent
         const guildsResponse = await fetch('https://discord.com/api/v10/users/@me/guilds', {
             headers: {
@@ -1545,4 +1593,57 @@ updateSendButton();
 window.removeAuthorizedUser = removeAuthorizedUser;
 
 console.log('🎉 Initialisation terminée');
+
+// Event listener pour sauvegarder le token
+document.getElementById('saveTokenBtn').addEventListener('click', () => {
+    const tokenInput = document.getElementById('botTokenInput');
+    const tokenStatus = document.getElementById('tokenStatus');
+    
+    if (tokenInput.value.trim()) {
+        BOT_TOKEN = tokenInput.value.trim();
+        localStorage.setItem('discordBotToken', BOT_TOKEN);
+        
+        tokenStatus.textContent = '✅ Token sauvegardé avec succès !';
+        tokenStatus.className = 'text-center text-sm text-green-600';
+        showElement(tokenStatus);
+        
+        // Cacher le message après 3 secondes
+        setTimeout(() => {
+            hideElement(tokenStatus);
+        }, 3000);
+    } else {
+        tokenStatus.textContent = '❌ Veuillez entrer un token valide';
+        tokenStatus.className = 'text-center text-sm text-red-600';
+        showElement(tokenStatus);
+    }
+});
+
+// Charger le token sauvegardé au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedToken = localStorage.getItem('discordBotToken');
+    if (savedToken) {
+        BOT_TOKEN = savedToken;
+        document.getElementById('botTokenInput').value = savedToken;
+        
+        const tokenStatus = document.getElementById('tokenStatus');
+        tokenStatus.textContent = '✅ Token chargé depuis la sauvegarde';
+        tokenStatus.className = 'text-center text-sm text-green-600';
+        showElement(tokenStatus);
+    }
+});
+
+function getChannelTypeIcon(type) {
+    switch (type) {
+        case 0: return '#'; // Text channel
+        case 2: return '🔊'; // Voice channel
+        case 4: return '📁'; // Category
+        case 5: return '📢'; // Announcement channel
+        case 10: return '🧵'; // News thread
+        case 11: return '🧵'; // Public thread
+        case 12: return '🔒'; // Private thread
+        case 13: return '🎤'; // Stage channel
+        case 15: return '🏛️'; // Forum channel
+        default: return '#';
+    }
+}
 </script>
