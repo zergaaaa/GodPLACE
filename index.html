@@ -188,19 +188,41 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
         .channel-item:hover {
             background: #f9fafb;
             border-color: #d4af37;
         }
-
         .channel-item.selected {
             background: #d4af37;
             color: white;
             border-color: #d4af37;
         }
+
+        .config-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .config-title {
+            color: #856404;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d4af37;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Loading Screen -->
     <div id="loadingScreen" class="min-h-screen flex items-center justify-center">
@@ -217,7 +239,6 @@
             <h1 class="text-2xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
             <p class="text-gray-600">Connexion requise</p>
         </div>
-
         <form id="loginForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -235,7 +256,6 @@
                 🚀 Se connecter
             </button>
         </form>
-
         <div id="authError" class="alert alert-error hidden"></div>
     </div>
 
@@ -253,6 +273,15 @@
             <button id="logoutBtn" class="btn btn-danger">
                 🚪 Déconnexion
             </button>
+        </div>
+
+        <!-- Discord Bot Configuration -->
+        <div class="config-section">
+            <div class="config-title">⚙️ Configuration du Bot Discord</div>
+            <p class="text-sm text-gray-600 mb-3">Entrez le token de votre bot Discord pour envoyer les messages</p>
+            <input type="password" id="botTokenInput" class="config-input" placeholder="Votre token de bot Discord">
+            <button id="saveTokenBtn" class="btn btn-outline btn-sm">💾 Sauvegarder le token</button>
+            <div id="tokenStatus" class="text-sm mt-2"></div>
         </div>
 
         <!-- Header -->
@@ -438,8 +467,9 @@ let selectedChannel = '';
 let selectedChannelName = '';
 let selectedImage = '';
 let isLoading = false;
+let discordBotToken = '';
 
-// Données des catégories
+// Données des catégories (même structure que votre code original)
 const categories = {
     mondeEnDeclin: {
         title: "Le Monde en Déclin",
@@ -624,7 +654,10 @@ const elements = {
     sendSuccess: document.getElementById('sendSuccess'),
     categoryBadge: document.getElementById('categoryBadge'),
     weekBadge: document.getElementById('weekBadge'),
-    channelBadge: document.getElementById('channelBadge')
+    channelBadge: document.getElementById('channelBadge'),
+    botTokenInput: document.getElementById('botTokenInput'),
+    saveTokenBtn: document.getElementById('saveTokenBtn'),
+    tokenStatus: document.getElementById('tokenStatus')
 };
 
 // Fonctions utilitaires
@@ -653,13 +686,13 @@ function showMainPanel() {
     hideElement(elements.loadingScreen);
     hideElement(elements.authScreen);
     showElement(elements.mainPanel);
-
     if (elements.userEmail && currentUser) {
         elements.userEmail.textContent = currentUser.email;
     }
     if (elements.userDiscord) {
         elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
     }
+    loadBotToken();
 }
 
 function hideAllViews() {
@@ -673,7 +706,6 @@ function hideAllViews() {
 function showView(viewName) {
     hideAllViews();
     currentView = viewName;
-
     if (viewName === 'main') {
         showElement(elements.mainView);
         hideElement(elements.backBtn);
@@ -712,7 +744,7 @@ function updateBadges() {
 }
 
 function updateSendButton() {
-    const canSend = selectedImage && selectedChannel && !isLoading;
+    const canSend = selectedImage && selectedChannel && !isLoading && discordBotToken;
     elements.sendBtn.disabled = !canSend;
     elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer au bot Discord';
 }
@@ -773,8 +805,38 @@ function selectWeek(week, imageUrl) {
     updateSendButton();
 }
 
+// Gestion du token Discord
+function saveBotToken() {
+    const token = elements.botTokenInput.value.trim();
+    if (token) {
+        discordBotToken = token;
+        localStorage.setItem('discordBotToken', token);
+        elements.tokenStatus.textContent = '✅ Token sauvegardé';
+        elements.tokenStatus.style.color = 'green';
+        elements.botTokenInput.value = '';
+        updateSendButton();
+    } else {
+        elements.tokenStatus.textContent = '❌ Veuillez entrer un token valide';
+        elements.tokenStatus.style.color = 'red';
+    }
+}
+
+function loadBotToken() {
+    const savedToken = localStorage.getItem('discordBotToken');
+    if (savedToken) {
+        discordBotToken = savedToken;
+        elements.tokenStatus.textContent = '✅ Token chargé';
+        elements.tokenStatus.style.color = 'green';
+    } else {
+        elements.tokenStatus.textContent = '⚠️ Aucun token configuré';
+        elements.tokenStatus.style.color = 'orange';
+    }
+    updateSendButton();
+}
+
+// Fonction d'envoi vers Discord
 async function sendToDiscord() {
-    if (!selectedImage || !selectedChannel) return;
+    if (!selectedImage || !selectedChannel || !discordBotToken) return;
 
     isLoading = true;
     updateSendButton();
@@ -782,8 +844,44 @@ async function sendToDiscord() {
     hideElement(elements.sendSuccess);
 
     try {
-        // Simulation d'envoi (remplacez par votre vraie logique)
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Télécharger l'image
+        const imageResponse = await fetch(selectedImage);
+        if (!imageResponse.ok) {
+            throw new Error('Impossible de télécharger l\'image');
+        }
+
+        const imageBlob = await imageResponse.blob();
+
+        // Préparer les données pour Discord
+        const formData = new FormData();
+        
+        // Ajouter le message
+        const messageContent = {
+            content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`
+        };
+        
+        formData.append('payload_json', JSON.stringify(messageContent));
+        
+        // Ajouter l'image
+        const filename = `${(selectedCategory || selectedGame)}_${selectedWeek}.png`.replace(/[^a-zA-Z0-9._-]/g, '_');
+        formData.append('files[0]', imageBlob, filename);
+
+        // Envoyer à Discord
+        const discordResponse = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bot ${discordBotToken}`
+            },
+            body: formData
+        });
+
+        if (!discordResponse.ok) {
+            const errorData = await discordResponse.text();
+            console.error('Erreur Discord API:', errorData);
+            throw new Error(`Erreur Discord API: ${discordResponse.status}`);
+        }
+
+        const result = await discordResponse.json();
 
         // Sauvegarder le log
         await saveLog(
@@ -796,12 +894,10 @@ async function sendToDiscord() {
 
     } catch (error) {
         console.error('Erreur:', error);
-
         await saveLog(
             'Erreur envoi message',
             `Erreur: ${error.message} | Salon: ${selectedChannelName}`
         );
-
         elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
         showElement(elements.sendError);
     } finally {
@@ -877,6 +973,9 @@ if (elements.logoutBtn) {
     });
 }
 
+// Gestion du token Discord
+elements.saveTokenBtn.addEventListener('click', saveBotToken);
+
 elements.categorySelect.addEventListener('change', (e) => {
     const categoryKey = e.target.value;
     resetSelection();
@@ -907,7 +1006,6 @@ document.querySelectorAll('.channel-item').forEach(item => {
     item.addEventListener('click', () => {
         selectedChannel = item.dataset.channel;
         selectedChannelName = item.dataset.name;
-
         document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('selected'));
         item.classList.add('selected');
         
@@ -934,6 +1032,6 @@ updateBadges();
 updateSendButton();
 
 console.log('🎉 Application prête !');
-</script>
+    </script>
 </body>
 </html>
