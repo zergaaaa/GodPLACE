@@ -312,6 +312,33 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .channel-item:hover {
+            background: #f9fafb;
+            border-color: #d4af37;
+        }
+
+        .channel-item.selected {
+            background: #d4af37;
+            color: white;
+            border-color: #d4af37;
+        }
+
+        .channel-type {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -520,28 +547,31 @@
             </div>
         </div>
 
-        <!-- Discord Channel Selection -->
+        <!-- Server Selection -->
+        <div id="serverView" class="card hidden">
+            <div class="card-header">
+                <h2 class="card-title">4. Choisissez un serveur Discord</h2>
+                <p class="card-description">Sélectionnez le serveur Discord cible</p>
+            </div>
+            <div class="card-content">
+                <input type="text" id="serverIdInput" class="form-input mb-4" placeholder="ID du serveur Discord (ex: 1234567890123456789)">
+                <button id="loadServerBtn" class="btn btn-primary w-full">
+                    🔍 Charger les salons du serveur
+                </button>
+                <div id="serverError" class="alert alert-error hidden"></div>
+            </div>
+        </div>
+
+        <!-- Channel Selection -->
         <div id="channelView" class="card hidden">
             <div class="card-header">
-                <h2 class="card-title">4. Choisissez un salon Discord</h2>
+                <h2 class="card-title">5. Choisissez un salon</h2>
                 <p class="card-description">Sélectionnez le salon où envoyer le contenu</p>
             </div>
             <div class="card-content space-y-4">
-                <select id="channelSelect" class="form-input">
-                    <option value="">-- Choisissez un salon --</option>
-                    <option value="1378679774742056974">Grille de lumière</option>
-                    <option value="1378680922928320653">Éclaireurs</option>
-                    <option value="1325922071473295411">Entre frères et soeurs en christ</option>
-                    <option value="1378679000000000001">Annonces</option>
-                    <option value="1365417738436087909">Je préfères G1</option>
-                    <option value="1365417832774635540">Je préfères G2</option>
-                    <option value="1369042309966073856">Savoir chrétien G1</option>
-                    <option value="1369042329393954887">Savoir chrétien G2</option>
-                    <option value="1369042347492380693">Savoir chrétien G3</option>
-                    <option value="1325922077454110731">Carnet chretien</option>
-                    <option value="1325922087143080056">Loue avec ton art</option>
-                    <option value="1325922084739612794">Chaîne sacrée</option>
-                </select>
+                <div id="channelsList" class="max-h-64 overflow-y-auto">
+                    <!-- Les salons seront chargés ici -->
+                </div>
                 <button id="sendBtn" class="btn btn-primary w-full" disabled>
                     📤 Envoyer au bot Discord
                 </button>
@@ -553,6 +583,7 @@
         <div class="flex flex-wrap gap-2 justify-center">
             <span id="categoryBadge" class="badge badge-inactive">Catégorie: Non sélectionnée</span>
             <span id="weekBadge" class="badge badge-inactive">Option: Non sélectionnée</span>
+            <span id="serverBadge" class="badge badge-inactive">Serveur: Non sélectionné</span>
             <span id="channelBadge" class="badge badge-inactive">Salon: Non sélectionné</span>
         </div>
     </div>
@@ -586,6 +617,9 @@
             "modo2@example.com"
         ];
 
+        // ⚠️ REMPLACEZ PAR VOTRE TOKEN DE BOT
+        const BOT_TOKEN = 'VOTRE_VRAI_TOKEN_ICI';
+
         // Variables globales
         let currentUser = null;
         let userDiscordPseudo = '';
@@ -596,8 +630,12 @@
         let selectedGame = '';
         let selectedWeek = '';
         let selectedChannel = '';
+        let selectedChannelName = '';
+        let selectedServerId = '';
+        let selectedServerName = '';
         let selectedImage = '';
         let isLoading = false;
+        let availableChannels = [];
 
         // Données des catégories
         const categories = {
@@ -759,21 +797,6 @@
             }
         };
 
-        const availableChannels = {
-            "1378679774742056974": "Grille de lumière",
-            "1378680922928320653": "Éclaireurs",
-            "1325922071473295411": "Entre frères et soeurs en christ",
-            "1378679000000000001": "Annonces",
-            "1365417738436087909": "Je préfères G1",
-            "1365417832774635540": "Je préfères G2",
-            "1369042309966073856": "Savoir chrétien G1",
-            "1369042329393954887": "Savoir chrétien G2",
-            "1369042347492380693": "Savoir chrétien G3",
-            "1325922077454110731": "Carnet chretien",
-            "1325922087143080056": "Loue avec ton art",
-            "1325922084739612794": "Chaîne sacrée"
-        };
-
         // Éléments DOM
         const elements = {
             loadingScreen: document.getElementById('loadingScreen'),
@@ -797,19 +820,24 @@
             gamesView: document.getElementById('gamesView'),
             weekView: document.getElementById('weekView'),
             previewView: document.getElementById('previewView'),
+            serverView: document.getElementById('serverView'),
+            serverIdInput: document.getElementById('serverIdInput'),
+            loadServerBtn: document.getElementById('loadServerBtn'),
+            serverError: document.getElementById('serverError'),
             channelView: document.getElementById('channelView'),
+            channelsList: document.getElementById('channelsList'),
             backBtn: document.getElementById('backBtn'),
             categorySelect: document.getElementById('categorySelect'),
             weekButtons: document.getElementById('weekButtons'),
             weekDescription: document.getElementById('weekDescription'),
             previewImage: document.getElementById('previewImage'),
-            channelSelect: document.getElementById('channelSelect'),
             sendBtn: document.getElementById('sendBtn'),
             sendError: document.getElementById('sendError'),
             testBtn: document.getElementById('testBtn'),
             logs: document.getElementById('logs'),
             categoryBadge: document.getElementById('categoryBadge'),
             weekBadge: document.getElementById('weekBadge'),
+            serverBadge: document.getElementById('serverBadge'),
             channelBadge: document.getElementById('channelBadge')
         };
 
@@ -1242,6 +1270,7 @@
             hideElement(elements.gamesView);
             hideElement(elements.weekView);
             hideElement(elements.previewView);
+            hideElement(elements.serverView);
             hideElement(elements.channelView);
         }
 
@@ -1269,13 +1298,15 @@
             elements.weekBadge.textContent = `Option: ${selectedWeek || 'Non sélectionnée'}`;
             elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
 
-            const channelName = selectedChannel ? availableChannels[selectedChannel] : 'Non sélectionné';
-            elements.channelBadge.textContent = `Salon: ${channelName}`;
+            elements.serverBadge.textContent = `Serveur: ${selectedServerName || 'Non sélectionné'}`;
+            elements.serverBadge.className = `badge ${selectedServerId ? 'badge-active' : 'badge-inactive'}`;
+
+            elements.channelBadge.textContent = `Salon: ${selectedChannelName || 'Non sélectionné'}`;
             elements.channelBadge.className = `badge ${selectedChannel ? 'badge-active' : 'badge-inactive'}`;
         }
 
         function updateSendButton() {
-            const canSend = selectedImage && selectedChannel && !isLoading;
+            const canSend = selectedImage && selectedChannel && selectedServerId && !isLoading;
             elements.sendBtn.disabled = !canSend;
             elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer au bot Discord';
         }
@@ -1331,84 +1362,191 @@
 
             elements.previewImage.src = imageUrl;
             showElement(elements.previewView);
-            showElement(elements.channelView);
+            showElement(elements.serverView);
+            updateBadges();
+            updateSendButton();
+        }
+
+        // Fonction pour charger les salons d'un serveur
+        async function loadServerChannels() {
+            const serverId = elements.serverIdInput.value.trim();
+            if (!serverId) {
+                elements.serverError.textContent = 'Veuillez entrer un ID de serveur';
+                showElement(elements.serverError);
+                return;
+            }
+
+            elements.loadServerBtn.disabled = true;
+            elements.loadServerBtn.innerHTML = '🔄 Chargement...';
+            hideElement(elements.serverError);
+
+            try {
+                // Récupérer les informations du serveur
+                const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
+                    headers: {
+                        'Authorization': `Bot ${BOT_TOKEN}`,
+                    }
+                });
+
+                if (!guildResponse.ok) {
+                    if (guildResponse.status === 403) {
+                        throw new Error('Le bot n\'a pas accès à ce serveur');
+                    } else if (guildResponse.status === 404) {
+                        throw new Error('Serveur introuvable');
+                    } else {
+                        throw new Error(`Erreur ${guildResponse.status}: ${guildResponse.statusText}`);
+                    }
+                }
+
+                const guild = await guildResponse.json();
+                selectedServerId = serverId;
+                selectedServerName = guild.name;
+
+                // Récupérer les salons du serveur
+                const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}/channels`, {
+                    headers: {
+                        'Authorization': `Bot ${BOT_TOKEN}`,
+                    }
+                });
+
+                if (!channelsResponse.ok) {
+                    throw new Error(`Erreur lors de la récupération des salons: ${channelsResponse.status}`);
+                }
+
+                const channels = await channelsResponse.json();
+                
+                // Filtrer seulement les salons texte (type 0) et les fils de discussion (type 11)
+                availableChannels = channels.filter(channel => 
+                    channel.type === 0 || channel.type === 5 || channel.type === 11
+                ).sort((a, b) => a.name.localeCompare(b.name));
+
+                displayChannels();
+                showElement(elements.channelView);
+                updateBadges();
+
+            } catch (error) {
+                console.error('Erreur chargement serveur:', error);
+                elements.serverError.textContent = `❌ ${error.message}`;
+                showElement(elements.serverError);
+            } finally {
+                elements.loadServerBtn.disabled = false;
+                elements.loadServerBtn.innerHTML = '🔍 Charger les salons du serveur';
+            }
+        }
+
+        function displayChannels() {
+            elements.channelsList.innerHTML = '';
+
+            if (availableChannels.length === 0) {
+                elements.channelsList.innerHTML = '<div class="p-4 text-center text-gray-500">Aucun salon accessible trouvé</div>';
+                return;
+            }
+
+            availableChannels.forEach(channel => {
+                const channelDiv = document.createElement('div');
+                channelDiv.className = 'channel-item';
+                channelDiv.onclick = () => selectChannel(channel.id, channel.name);
+
+                const typeIcon = getChannelTypeIcon(channel.type);
+                
+                channelDiv.innerHTML = `
+                    <span class="channel-type">${typeIcon}</span>
+                    <span class="flex-1">${channel.name}</span>
+                `;
+
+                elements.channelsList.appendChild(channelDiv);
+            });
+        }
+
+        function getChannelTypeIcon(type) {
+            switch (type) {
+                case 0: return '#'; // Salon texte
+                case 5: return '📢'; // Salon d'annonces
+                case 11: return '🧵'; // Fil de discussion
+                default: return '#';
+            }
+        }
+
+        function selectChannel(channelId, channelName) {
+            selectedChannel = channelId;
+            selectedChannelName = channelName;
+
+            // Mettre à jour l'affichage
+            elements.channelsList.querySelectorAll('.channel-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            event.currentTarget.classList.add('selected');
+            
             updateBadges();
             updateSendButton();
         }
 
         async function sendToDiscord() {
-    if (!selectedImage || !selectedChannel) return;
+            if (!selectedImage || !selectedChannel || !selectedServerId) return;
 
-    isLoading = true;
-    updateSendButton();
-    hideElement(elements.sendError);
+            isLoading = true;
+            updateSendButton();
+            hideElement(elements.sendError);
 
-    try {
-        // ⚠️ REMPLACEZ PAR VOTRE TOKEN DE BOT
-        const BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c';
-        const API_URL = `https://app.botdesignerdiscord.com/api/interaction/fee3f7bc-e789-4d76-9a95-1d2520a0797d`;
-
-        const response = await fetch(API_UR, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bot ${BOT_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`,
-                embeds: [{
-                    title: `${selectedCategory || selectedGame} - ${selectedWeek}`,
-                    image: {
-                        url: selectedImage
+            try {
+                const response = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bot ${BOT_TOKEN}`,
+                        'Content-Type': 'application/json',
                     },
-                    color: 0xD4AF37, // Couleur dorée
-                    footer: {
-                        text: `Envoyé par ${userDiscordPseudo}`,
-                        icon_url: "https://cdn.discordapp.com/emojis/1234567890123456789.png"
-                    },
-                    timestamp: new Date().toISOString()
-                }]
-            })
-        });
+                    body: JSON.stringify({
+                        content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`,
+                        embeds: [{
+                            title: `${selectedCategory || selectedGame} - ${selectedWeek}`,
+                            image: {
+                                url: selectedImage
+                            },
+                            color: 0xD4AF37,
+                            footer: {
+                                text: `Envoyé par ${userDiscordPseudo} via Godplace Panel`,
+                            },
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Erreur Discord API (${response.status}): ${errorData.message || 'Erreur inconnue'}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Erreur Discord API (${response.status}): ${errorData.message || 'Erreur inconnue'}`);
+                }
+
+                // Sauvegarder le log
+                await saveLog(
+                    'Message envoyé',
+                    `Serveur: ${selectedServerName} (${selectedServerId}) | Salon: ${selectedChannelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
+                );
+
+                alert(`✅ Message envoyé avec succès dans "${selectedChannelName}" sur le serveur "${selectedServerName}" !`);
+
+                if (isAdmin || isModo) {
+                    loadLogs();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+
+                await saveLog(
+                    'Erreur envoi message',
+                    `Erreur: ${error.message} | Serveur: ${selectedServerName} | Salon: ${selectedChannelName}`
+                );
+
+                elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
+                showElement(elements.sendError);
+
+                if (isAdmin || isModo) {
+                    loadLogs();
+                }
+            } finally {
+                isLoading = false;
+                updateSendButton();
+            }
         }
-
-        const channelName = availableChannels[selectedChannel];
-
-        // Sauvegarder le log
-        await saveLog(
-            'Message envoyé',
-            `Salon: ${channelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
-        );
-
-        alert(`✅ Message envoyé avec succès dans le salon "${channelName}" !`);
-
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-
-        // Sauvegarder le log d'erreur
-        await saveLog(
-            'Erreur envoi message',
-            `Erreur: ${error.message} | Salon: ${availableChannels[selectedChannel]} | Catégorie: ${selectedCategory || selectedGame}`
-        );
-
-        elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
-        showElement(elements.sendError);
-
-        if (isAdmin || isModo) {
-            loadLogs();
-        }
-    } finally {
-        isLoading = false;
-        updateSendButton();
-    }
-}
 
         // Event listeners du panel
         elements.testBtn.addEventListener('click', testConnection);
@@ -1427,6 +1565,7 @@
             selectedWeek = '';
             selectedImage = '';
             hideElement(elements.previewView);
+            hideElement(elements.serverView);
             hideElement(elements.channelView);
             updateBadges();
             updateSendButton();
@@ -1441,17 +1580,14 @@
                 selectedWeek = '';
                 selectedImage = '';
                 hideElement(elements.previewView);
+                hideElement(elements.serverView);
                 hideElement(elements.channelView);
                 updateBadges();
                 updateSendButton();
             }
         });
 
-        elements.channelSelect.addEventListener('change', (e) => {
-            selectedChannel = e.target.value;
-            updateBadges();
-            updateSendButton();
-        });
+        elements.loadServerBtn.addEventListener('click', loadServerChannels);
 
         elements.sendBtn.addEventListener('click', sendToDiscord);
 
@@ -1466,6 +1602,7 @@
             selectedWeek = '';
             selectedImage = '';
             hideElement(elements.previewView);
+            hideElement(elements.serverView);
             hideElement(elements.channelView);
             updateBadges();
             updateSendButton();
