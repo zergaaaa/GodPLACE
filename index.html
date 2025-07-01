@@ -589,423 +589,930 @@
     </div>
 
     <script>
-    console.log('🚀 Démarrage de l\'application...');
-    
-    // Configuration Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyDuY1T6HaxfDbEcZZYOrpDcD5LPNUTmeUc",
-        authDomain: "godplace-dea67.firebaseapp.com",
-        projectId: "godplace-dea67",
-        storageBucket: "godplace-dea67.firebasestorage.app",
-        messagingSenderId: "774010087004",
-        appId: "1:774010087004:web:31346dfbc1b2adfed2e899",
-        measurementId: "G-HNXY5FDSZK"
-    };
+console.log('🚀 Démarrage de l\'application...');
 
-    console.log('📊 Configuration Firebase:', firebaseConfig);
+// Configuration Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDuY1T6HaxfDbEcZZYOrpDcD5LPNUTmeUc",
+    authDomain: "godplace-dea67.firebaseapp.com",
+    projectId: "godplace-dea67",
+    storageBucket: "godplace-dea67.firebasestorage.app",
+    messagingSenderId: "774010087004",
+    appId: "1:774010087004:web:31346dfbc1b2adfed2e899",
+    measurementId: "G-HNXY5FDSZK"
+};
 
-    // Vérifier si Firebase est chargé
-    if (typeof firebase === 'undefined') {
-        console.error('❌ Firebase n\'est pas chargé !');
-        alert('Erreur: Firebase n\'est pas chargé. Vérifiez votre connexion internet.');
-    } else {
-        console.log('✅ Firebase est chargé');
-    }
+// Initialiser Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    // Initialiser Firebase
-    try {
-        firebase.initializeApp(firebaseConfig);
-        console.log('✅ Firebase initialisé avec succès');
-    } catch (error) {
-        console.error('❌ Erreur initialisation Firebase:', error);
-        alert('Erreur Firebase: ' + error.message);
-    }
+// Configuration
+const ADMIN_EMAILS = [
+    "guylann.couvri@gmail.com",
+    "cineustaci@gmail.com",
+    "elyna933@gmail.com"
+];
 
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+const MODO_EMAILS = [
+    "modo1@example.com",
+    "modo2@example.com"
+];
 
-    console.log('🔐 Auth:', auth);
-    console.log('🗄️ Firestore:', db);
+// ⚠️ REMPLACEZ PAR VOTRE TOKEN DE BOT
+const BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c';
 
-    // Configuration
-    const ADMIN_EMAILS = [
-        "guylann.couvri@gmail.com",
-        "cineustaci@gmail.com",
-        "elyna933@gmail.com"
-    ];
+// Variables globales
+let currentUser = null;
+let userDiscordPseudo = '';
+let isAdmin = false;
+let isModo = false;
+let currentView = 'main';
+let selectedCategory = '';
+let selectedGame = '';
+let selectedWeek = '';
+let selectedChannel = '';
+let selectedChannelName = '';
+let selectedServerId = '';
+let selectedServerName = '';
+let selectedImage = '';
+let isLoading = false;
+let availableChannels = [];
 
-    const MODO_EMAILS = [
-        "modo1@example.com",
-        "modo2@example.com"
-    ];
-
-    // ⚠️ REMPLACEZ PAR VOTRE TOKEN DE BOT
-    const BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.GVj5Zm.j-In9IJM9Z7Mvc5vUJ8yAu7OShPiDLwDY9ok5c';
-
-    // Variables globales
-    let currentUser = null;
-    let userDiscordPseudo = '';
-    let isAdmin = false;
-    let isModo = false;
-    let currentView = 'main';
-    let selectedCategory = '';
-    let selectedGame = '';
-    let selectedWeek = '';
-    let selectedChannel = '';
-    let selectedChannelName = '';
-    let selectedServerId = '';
-    let selectedServerName = '';
-    let selectedImage = '';
-    let isLoading = false;
-    let availableChannels = [];
-
-    // Données des catégories (gardez les mêmes données que dans votre code)
-    const categories = {
-        mondeEnDeclin: {
-            title: "Le Monde en Déclin",
-            weeks: {
-                "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
-                "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png",
-                "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725348314222754/FICHES_SPECIFIQUES_PETIT_FORMAT_-_6.png"
-            }
-        },
-        // ... (gardez toutes vos autres catégories)
-        Bandeaux: {
-            title: "Bandeaux",
-            weeks: {
-                "à vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
-                "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png"
-            }
+// Données des catégories COMPLÈTES
+const categories = {
+    mondeEnDeclin: {
+        title: "Le Monde en Déclin",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725348314222754/FICHES_SPECIFIQUES_PETIT_FORMAT_-_6.png"
         }
-    };
-
-    const gameCategories = {
-        grilleDeLumiere: {
-            title: "Grille de lumière",
-            buttons: {
-                "Grille de lumière 1": "https://media.discordapp.net/attachments/1365412596655853699/1381746959072628826/PLATEAUX_CODES_SACRES_-_3.png"
-            }
+    },
+    gagneCoeurChrist: {
+        title: "Gagne le cœur du Christ",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725653625864284/FICHES_SPECIFIQUES_PETIT_FORMAT_-_13.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725697045434488/FICHES_SPECIFIQUES_PETIT_FORMAT_-_14.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725725654782062/FICHES_SPECIFIQUES_PETIT_FORMAT_-_15.png"
         }
-    };
-
-    // Éléments DOM
-    const elements = {
-        loadingScreen: document.getElementById('loadingScreen'),
-        authScreen: document.getElementById('authScreen'),
-        mainPanel: document.getElementById('mainPanel'),
-        loginForm: document.getElementById('loginForm'),
-        registerForm: document.getElementById('registerForm'),
-        authError: document.getElementById('authError'),
-        authSuccess: document.getElementById('authSuccess'),
-        userEmail: document.getElementById('userEmail'),
-        userDiscord: document.getElementById('userDiscord'),
-        adminBadge: document.getElementById('adminBadge'),
-        modoBadge: document.getElementById('modoBadge'),
-        logoutBtn: document.getElementById('logoutBtn'),
-        logsSection: document.getElementById('logsSection'),
-        authorizedUsersSection: document.getElementById('authorizedUsersSection'),
-        authorizedUsersList: document.getElementById('authorizedUsersList'),
-        newUserPseudo: document.getElementById('newUserPseudo'),
-        addUserBtn: document.getElementById('addUserBtn'),
-        mainView: document.getElementById('mainView'),
-        gamesView: document.getElementById('gamesView'),
-        weekView: document.getElementById('weekView'),
-        previewView: document.getElementById('previewView'),
-        serverView: document.getElementById('serverView'),
-        serverIdInput: document.getElementById('serverIdInput'),
-        loadServerBtn: document.getElementById('loadServerBtn'),
-        serverError: document.getElementById('serverError'),
-        channelView: document.getElementById('channelView'),
-        channelsList: document.getElementById('channelsList'),
-        backBtn: document.getElementById('backBtn'),
-        categorySelect: document.getElementById('categorySelect'),
-        weekButtons: document.getElementById('weekButtons'),
-        weekDescription: document.getElementById('weekDescription'),
-        previewImage: document.getElementById('previewImage'),
-        sendBtn: document.getElementById('sendBtn'),
-        sendError: document.getElementById('sendError'),
-        testBtn: document.getElementById('testBtn'),
-        logs: document.getElementById('logs'),
-        categoryBadge: document.getElementById('categoryBadge'),
-        weekBadge: document.getElementById('weekBadge'),
-        serverBadge: document.getElementById('serverBadge'),
-        channelBadge: document.getElementById('channelBadge')
-    };
-
-    console.log('🎯 Éléments DOM chargés:', Object.keys(elements).length);
-
-    // Fonctions utilitaires
-    function showElement(element) {
-        if (element) {
-            element.classList.remove('hidden');
-        } else {
-            console.error('❌ Élément non trouvé pour showElement');
+    },
+    Bandeaux: {
+        title: "Bandeaux",
+        weeks: {
+            "à vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
+            "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png",
+            "Place à la victoire": "https://media.discordapp.net/attachments/1365412596655853699/1365449855157407754/BANDEAUX_-_29.png",
+            "Team oui ou team non": "https://media.discordapp.net/attachments/1365412596655853699/1365449952163266712/BANDEAUX_-_31.png",
+            "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365450022350749717/BANDEAUX_-_23.png",
+            "face à face": "https://media.discordapp.net/attachments/1365412596655853699/1365450102835249172/BANDEAUX_-_33.png",
+            "à vos votes": "https://media.discordapp.net/attachments/1365412596655853699/1365450176457609216/BANDEAUX_-_35.png",
+            "Installez-vous": "https://media.discordapp.net/attachments/1365412596655853699/1365450239045144576/BANDEAUX_-_36.png",
+            "on papote": "https://media.discordapp.net/attachments/1365412596655853699/1365450337854427267/BANDEAUX_-_37.png",
+            "à vos Bibles": "https://media.discordapp.net/attachments/1365412596655853699/1365450502476795945/BANDEAUX_-_39.png"
         }
-    }
-
-    function hideElement(element) {
-        if (element) {
-            element.classList.add('hidden');
-        } else {
-            console.error('❌ Élément non trouvé pour hideElement');
+    },
+    loueAvecTonArt: {
+        title: "Loue avec ton art",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725770085040218/FICHES_SPECIFIQUES_PETIT_FORMAT_-_16.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725825047068722/FICHES_SPECIFIQUES_PETIT_FORMAT_-_17.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725866457567416/FICHES_SPECIFIQUES_PETIT_FORMAT_-_18.png"
         }
-    }
-
-    function showError(message) {
-        console.log('❌ Erreur:', message);
-        if (elements.authError) {
-            elements.authError.textContent = message;
-            showElement(elements.authError);
-            hideElement(elements.authSuccess);
+    },
+    chaineSacree: {
+        title: "Chaîne sacrée",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725911411851344/FICHES_SPECIFIQUES_PETIT_FORMAT_-_19.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725981528166450/FICHES_SPECIFIQUES_PETIT_FORMAT_-_20.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726016988465158/FICHES_SPECIFIQUES_PETIT_FORMAT_-_21.png"
         }
-    }
-
-    function showSuccess(message) {
-        console.log('✅ Succès:', message);
-        if (elements.authSuccess) {
-            elements.authSuccess.textContent = message;
-            showElement(elements.authSuccess);
-            hideElement(elements.authError);
+    },
+    savoirChretien: {
+        title: "Savoir chrétien",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726058002784767/FICHES_SPECIFIQUES_PETIT_FORMAT_-_22.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726094986149378/FICHES_SPECIFIQUES_PETIT_FORMAT_-_23.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726124882736641/FICHES_SPECIFIQUES_PETIT_FORMAT_-_24.png"
+        }
+    },
+    jePrefere: {
+        title: "Je préfère",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726155632450067/FICHES_SPECIFIQUES_PETIT_FORMAT_-_25.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726183903265536/FICHES_SPECIFIQUES_PETIT_FORMAT_-_26.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726215589114901/FICHES_SPECIFIQUES_PETIT_FORMAT_-_27.png"
+        }
+    },
+    jeDebats: {
+        title: "Je débats",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726250338652418/FICHES_SPECIFIQUES_PETIT_FORMAT_-_28.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726283172867072/FICHES_SPECIFIQUES_PETIT_FORMAT_-_29.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726313883936275/FICHES_SPECIFIQUES_PETIT_FORMAT_-_30.png"
+        }
+    },
+    composeTonChant: {
+        title: "Compose ton chant",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726345386018823/FICHES_SPECIFIQUES_PETIT_FORMAT_-_31.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726374519505411/FICHES_SPECIFIQUES_PETIT_FORMAT_-_32.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726412025523506/FICHES_SPECIFIQUES_PETIT_FORMAT_-_33.png"
+        }
+    },
+    priereEnChoeur: {
+        title: "Prière en chœur",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726445561549856/FICHES_SPECIFIQUES_PETIT_FORMAT_-_34.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726477503522300/FICHES_SPECIFIQUES_PETIT_FORMAT_-_35.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726504952314986/FICHES_SPECIFIQUES_PETIT_FORMAT_-_36.png"
+        }
+    },
+    quiSuisJeBiblique: {
+        title: "Qui suis-je biblique",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726536286921778/FICHES_SPECIFIQUES_PETIT_FORMAT_-_37.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726566499025000/FICHES_SPECIFIQUES_PETIT_FORMAT_-_38.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726598318859014/FICHES_SPECIFIQUES_PETIT_FORMAT_-_39.png"
+        }
+    },
+    comprendreApocalypse: {
+        title: "Comprendre l'apocalypse",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726630002579476/FICHES_SPECIFIQUES_PETIT_FORMAT_-_40.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726663403672848/FICHES_SPECIFIQUES_PETIT_FORMAT_-_41.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726700276018184/FICHES_SPECIFIQUES_PETIT_FORMAT_-_42.png"
+        }
+    },
+    bibleIllustree: {
+        title: "LA Bible illustrée",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726733322940924/FICHES_SPECIFIQUES_PETIT_FORMAT_-_43.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726763165978650/FICHES_SPECIFIQUES_PETIT_FORMAT_-_44.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726794945651970/FICHES_SPECIFIQUES_PETIT_FORMAT_-_45.png"
+        }
+    },
+    cinemaChretien: {
+        title: "Cinéma Chrétien",
+        weeks: {
+            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726824389902396/FICHES_SPECIFIQUES_PETIT_FORMAT_-_46.png",
+            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726860361834760/FICHES_SPECIFIQUES_PETIT_FORMAT_-_47.png",
+            "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726891917857532/FICHES_SPECIFIQUES_PETIT_FORMAT_-_48.png"
         }
     }
+};
 
-    function clearMessages() {
-        hideElement(elements.authError);
+const gameCategories = {
+    grilleDeLumiere: {
+        title: "Grille de lumière",
+        buttons: {
+            "Grille de lumière 1": "https://media.discordapp.net/attachments/1365412596655853699/1381746959072628826/PLATEAUX_CODES_SACRES_-_3.png",
+            "Grille de lumière 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747211351883867/PLATEAUX_CODES_SACRES_-_6.png",
+            "Grille de lumière 3": "https://media.discordapp.net/attachments/1365412596655853699/1381747610108432527/PLATEAUX_CODES_SACRES.png",
+            "Grille de lumière 4": "https://media.discordapp.net/attachments/1365412596655853699/1381747659450355836/PLATEAUX_CODES_SACRES_-_12.png",
+            "Grille de lumière 5": "https://media.discordapp.net/attachments/1365412596655853699/1381747879051395174/PLATEAUX_CODES_SACRES.png",
+            "Grille de lumière 6": "https://media.discordapp.net/attachments/1365412596655853699/1381748077844627617/PLATEAUX_CODES_SACRES_-_18.png",
+            "Grille de lumière 7": "https://media.discordapp.net/attachments/1365412596655853699/1381748456841810021/PLATEAUX_CODES_SACRES.png",
+            "Grille de lumière 8": "https://media.discordapp.net/attachments/1365412596655853699/1381748553675964709/PLATEAUX_CODES_SACRES_-_24.png",
+            "Grille de lumière 9": "https://media.discordapp.net/attachments/1365412596655853699/1381748623842218034/PLATEAUX_CODES_SACRES_-_28.png",
+            "Grille de lumière 10": "https://media.discordapp.net/attachments/1365412596655853699/1381748876700291162/PLATEAUX_CODES_SACRES.png"
+        }
+    },
+    eclaireurs: {
+        title: "Éclaireurs",
+        buttons: {
+            "Éclaireurs 1": "https://media.discordapp.net/attachments/1365412596655853699/1381747093592342528/PLATEAUX_CODES_SACRES_-_4.png",
+            "Éclaireurs 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747251466211559/PLATEAUX_CODES_SACRES_-_7.png",
+            "Éclaireurs 3": "https://media.discordapp.net/attachments/1365412596655853699/1381747367199510549/PLATEAUX_CODES_SACRES_-_10.png",
+            "Éclaireurs 4": "https://media.discordapp.net/attachments/1365412596655853699/1381747699107234003/PLATEAUX_CODES_SACRES_-_13.png",
+            "Éclaireurs 5": "https://media.discordapp.net/attachments/1365412596655853699/1381748030075568199/PLATEAUX_CODES_SACRES_-_16.png",
+            "Éclaireurs 6": "https://media.discordapp.net/attachments/1365412596655853699/1381748122304249896/PLATEAUX_CODES_SACRES_-_19.png",
+            "Éclaireurs 7": "https://media.discordapp.net/attachments/1365412596655853699/1381748505860767805/PLATEAUX_CODES_SACRES_-_22.png",
+            "Éclaireurs 8": "https://media.discordapp.net/attachments/1365412596655853699/1381748588476104835/PLATEAUX_CODES_SACRES_-_25.png",
+            "Éclaireurs 9": "https://media.discordapp.net/attachments/1365412596655853699/1381748653026312272/PLATEAUX_CODES_SACRES_-_27.png",
+            "Éclaireurs 10": "https://media.discordapp.net/attachments/1365412596655853699/1381749325507465226/PLATEAUX_CODES_SACRES_-_31.png",
+            "Éclaireurs 11": "https://media.discordapp.net/attachments/1365412596655853699/1381749407732469922/PLATEAUX_CODES_SACRES_-_36.png",
+            "Éclaireurs 12": "https://media.discordapp.net/attachments/1365412596655853699/1381749515937120257/PLATEAUX_CODES_SACRES_-_40.png",
+            "Éclaireurs 13": "https://media.discordapp.net/attachments/1365412596655853699/1381749593733071009/PLATEAUX_CODES_SACRES.png",
+            "Éclaireurs 14": "https://media.discordapp.net/attachments/1365412596655853699/1381749662737891459/PLATEAUX_CODES_SACRES_-_45.png"
+        }
+    }
+};
+
+// Éléments DOM
+const elements = {
+    loadingScreen: document.getElementById('loadingScreen'),
+    authScreen: document.getElementById('authScreen'),
+    mainPanel: document.getElementById('mainPanel'),
+    loginForm: document.getElementById('loginForm'),
+    registerForm: document.getElementById('registerForm'),
+    authError: document.getElementById('authError'),
+    authSuccess: document.getElementById('authSuccess'),
+    userEmail: document.getElementById('userEmail'),
+    userDiscord: document.getElementById('userDiscord'),
+    adminBadge: document.getElementById('adminBadge'),
+    modoBadge: document.getElementById('modoBadge'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    logsSection: document.getElementById('logsSection'),
+    authorizedUsersSection: document.getElementById('authorizedUsersSection'),
+    authorizedUsersList: document.getElementById('authorizedUsersList'),
+    newUserPseudo: document.getElementById('newUserPseudo'),
+    addUserBtn: document.getElementById('addUserBtn'),
+    mainView: document.getElementById('mainView'),
+    gamesView: document.getElementById('gamesView'),
+    weekView: document.getElementById('weekView'),
+    previewView: document.getElementById('previewView'),
+    serverView: document.getElementById('serverView'),
+    serverIdInput: document.getElementById('serverIdInput'),
+    loadServerBtn: document.getElementById('loadServerBtn'),
+    serverError: document.getElementById('serverError'),
+    channelView: document.getElementById('channelView'),
+    channelsList: document.getElementById('channelsList'),
+    backBtn: document.getElementById('backBtn'),
+    categorySelect: document.getElementById('categorySelect'),
+    weekButtons: document.getElementById('weekButtons'),
+    weekDescription: document.getElementById('weekDescription'),
+    previewImage: document.getElementById('previewImage'),
+    sendBtn: document.getElementById('sendBtn'),
+    sendError: document.getElementById('sendError'),
+    testBtn: document.getElementById('testBtn'),
+    logs: document.getElementById('logs'),
+    categoryBadge: document.getElementById('categoryBadge'),
+    weekBadge: document.getElementById('weekBadge'),
+    serverBadge: document.getElementById('serverBadge'),
+    channelBadge: document.getElementById('channelBadge')
+};
+
+// Fonctions utilitaires
+function showElement(element) {
+    if (element) {
+        element.classList.remove('hidden');
+    }
+}
+
+function hideElement(element) {
+    if (element) {
+        element.classList.add('hidden');
+    }
+}
+
+function showError(message) {
+    if (elements.authError) {
+        elements.authError.textContent = message;
+        showElement(elements.authError);
         hideElement(elements.authSuccess);
     }
+}
 
-    function showAuthScreen() {
-        console.log('🔐 Affichage écran d\'authentification');
-        hideElement(elements.loadingScreen);
-        showElement(elements.authScreen);
-        hideElement(elements.mainPanel);
+function showSuccess(message) {
+    if (elements.authSuccess) {
+        elements.authSuccess.textContent = message;
+        showElement(elements.authSuccess);
+        hideElement(elements.authError);
+    }
+}
+
+function clearMessages() {
+    hideElement(elements.authError);
+    hideElement(elements.authSuccess);
+}
+
+function showAuthScreen() {
+    hideElement(elements.loadingScreen);
+    showElement(elements.authScreen);
+    hideElement(elements.mainPanel);
+}
+
+function showMainPanel() {
+    hideElement(elements.loadingScreen);
+    hideElement(elements.authScreen);
+    showElement(elements.mainPanel);
+
+    if (elements.userEmail && currentUser) {
+        elements.userEmail.textContent = currentUser.email;
+    }
+    if (elements.userDiscord) {
+        elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
     }
 
-    function showMainPanel() {
-        console.log('🏠 Affichage panneau principal');
-        hideElement(elements.loadingScreen);
-        hideElement(elements.authScreen);
-        showElement(elements.mainPanel);
+    if (isAdmin) {
+        showElement(elements.adminBadge);
+        hideElement(elements.modoBadge);
+        showElement(elements.logsSection);
+        showElement(elements.authorizedUsersSection);
+        loadLogs();
+        loadAuthorizedUsers();
+    } else if (isModo) {
+        hideElement(elements.adminBadge);
+        showElement(elements.modoBadge);
+        showElement(elements.logsSection);
+        showElement(elements.authorizedUsersSection);
+        loadLogs();
+        loadAuthorizedUsers();
+    } else {
+        hideElement(elements.adminBadge);
+        hideElement(elements.modoBadge);
+        hideElement(elements.logsSection);
+        hideElement(elements.authorizedUsersSection);
+    }
+}
 
-        // Afficher les informations utilisateur
-        if (elements.userEmail && currentUser) {
-            elements.userEmail.textContent = currentUser.email;
-        }
-        if (elements.userDiscord) {
-            elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
-        }
+function checkUserRole(email) {
+    const isAdminUser = ADMIN_EMAILS.includes(email);
+    const isModoUser = MODO_EMAILS.includes(email);
+    return { isAdmin: isAdminUser, isModo: isModoUser };
+}
 
-        // Gérer les badges et permissions
-        if (isAdmin) {
-            showElement(elements.adminBadge);
-            hideElement(elements.modoBadge);
-            showElement(elements.logsSection);
-            showElement(elements.authorizedUsersSection);
-        } else if (isModo) {
-            hideElement(elements.adminBadge);
-            showElement(elements.modoBadge);
-            showElement(elements.logsSection);
-            showElement(elements.authorizedUsersSection);
-        } else {
-            hideElement(elements.adminBadge);
-            hideElement(elements.modoBadge);
-            hideElement(elements.logsSection);
-            hideElement(elements.authorizedUsersSection);
-        }
+// Fonctions de gestion du panel principal
+function hideAllViews() {
+    hideElement(elements.mainView);
+    hideElement(elements.gamesView);
+    hideElement(elements.weekView);
+    hideElement(elements.previewView);
+    hideElement(elements.serverView);
+    hideElement(elements.channelView);
+}
+
+function showView(viewName) {
+    hideAllViews();
+    currentView = viewName;
+
+    if (viewName === 'main') {
+        showElement(elements.mainView);
+        hideElement(elements.backBtn);
+    } else if (viewName === 'games') {
+        showElement(elements.gamesView);
+        showElement(elements.backBtn);
+    } else if (viewName === 'game-detail') {
+        showElement(elements.weekView);
+        showElement(elements.backBtn);
+    }
+}
+
+function resetSelection() {
+    selectedCategory = '';
+    selectedGame = '';
+    selectedWeek = '';
+    selectedChannel = '';
+    selectedChannelName = '';
+    selectedServerId = '';
+    selectedServerName = '';
+    selectedImage = '';
+    hideElement(elements.previewView);
+    hideElement(elements.serverView);
+    hideElement(elements.channelView);
+    updateBadges();
+    updateSendButton();
+}
+
+function updateBadges() {
+    const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : selectedGame ? gameCategories[selectedGame]?.title : 'Non sélectionnée';
+    elements.categoryBadge.textContent = `Catégorie: ${categoryTitle}`;
+    elements.categoryBadge.className = `badge ${selectedCategory || selectedGame ? 'badge-active' : 'badge-inactive'}`;
+
+    elements.weekBadge.textContent = `Option: ${selectedWeek || 'Non sélectionnée'}`;
+    elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
+
+    elements.serverBadge.textContent = `Serveur: ${selectedServerName || 'Non sélectionné'}`;
+    elements.serverBadge.className = `badge ${selectedServerId ? 'badge-active' : 'badge-inactive'}`;
+
+    elements.channelBadge.textContent = `Salon: ${selectedChannelName || 'Non sélectionné'}`;
+    elements.channelBadge.className = `badge ${selectedChannel ? 'badge-active' : 'badge-inactive'}`;
+}
+
+function updateSendButton() {
+    const canSend = selectedImage && selectedChannel && selectedServerId && !isLoading;
+    elements.sendBtn.disabled = !canSend;
+    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer au bot Discord';
+}
+
+function showWeekButtons(categoryKey, isGame = false) {
+    elements.weekButtons.innerHTML = '';
+    const data = isGame ? gameCategories[categoryKey]?.buttons : categories[categoryKey]?.weeks;
+    if (!data) return;
+
+    const itemCount = Object.keys(data).length;
+    let gridClass = 'grid-cols-3';
+    if (itemCount >= 10) {
+        gridClass = 'grid-cols-5';
+    } else if (itemCount >= 6) {
+        gridClass = 'grid-cols-4';
+    } else if (itemCount >= 4) {
+        gridClass = 'grid-cols-3';
+    } else {
+        gridClass = 'grid-cols-2';
     }
 
-    // Fonctions d'authentification
-    function checkUserRole(email) {
-        const isAdminUser = ADMIN_EMAILS.includes(email);
-        const isModoUser = MODO_EMAILS.includes(email);
-        console.log('👤 Vérification rôle pour', email, '- Admin:', isAdminUser, '- Modo:', isModoUser);
-        return { isAdmin: isAdminUser, isModo: isModoUser };
+    elements.weekButtons.className = `grid ${gridClass} gap-2`;
+
+    Object.keys(data).forEach(week => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline';
+        btn.style.height = 'auto';
+        btn.style.padding = '8px';
+        btn.style.fontSize = '0.75rem';
+        btn.textContent = week;
+        btn.onclick = () => selectWeek(week, data[week]);
+        if (!data[week]) {
+            btn.disabled = true;
+        }
+        elements.weekButtons.appendChild(btn);
+    });
+
+    const title = isGame ? gameCategories[categoryKey]?.title : categories[categoryKey]?.title;
+    elements.weekDescription.textContent = `Sélectionnez une option pour ${title}`;
+    showElement(elements.weekView);
+}
+
+function selectWeek(week, imageUrl) {
+    selectedWeek = week;
+    selectedImage = imageUrl;
+
+    elements.weekButtons.querySelectorAll('button').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent === week) {
+            btn.classList.add('active');
+        }
+    });
+
+    elements.previewImage.src = imageUrl;
+    showElement(elements.previewView);
+    showElement(elements.serverView);
+    updateBadges();
+    updateSendButton();
+}
+
+// Fonction pour charger les salons d'un serveur
+async function loadServerChannels() {
+    const serverId = elements.serverIdInput.value.trim();
+    if (!serverId) {
+        elements.serverError.textContent = 'Veuillez entrer un ID de serveur';
+        showElement(elements.serverError);
+        return;
     }
 
-    // Observer d'authentification avec timeout de sécurité
-    console.log('🔄 Configuration de l\'observer d\'authentification...');
-    
-    // Timeout de sécurité pour éviter le chargement infini
-    setTimeout(() => {
-        if (elements.loadingScreen && !elements.loadingScreen.classList.contains('hidden')) {
-            console.error('⏰ Timeout: Chargement trop long, affichage forcé de l\'écran d\'auth');
-            showAuthScreen();
-        }
-    }, 10000); // 10 secondes max
+    elements.loadServerBtn.disabled = true;
+    elements.loadServerBtn.innerHTML = '🔄 Chargement...';
+    hideElement(elements.serverError);
 
     try {
-        let authTimeout = setTimeout(() => {
-            console.log('⏰ Timeout auth, affichage manuel de l\'écran d\'auth');
-            showAuthScreen();
-        }, 8000);
-
-        auth.onAuthStateChanged(async (user) => {
-            clearTimeout(authTimeout); // Annuler le timeout
-            console.log('🔄 Changement d\'état d\'authentification:', user ? 'Connecté' : 'Déconnecté');
-            
-            if (user) {
-                console.log('👤 Utilisateur connecté:', user.email);
-                currentUser = user;
-                const roles = checkUserRole(user.email);
-                isAdmin = roles.isAdmin;
-                isModo = roles.isModo;
-
-                const savedPseudo = localStorage.getItem('discordPseudo');
-                if (savedPseudo) {
-                    userDiscordPseudo = savedPseudo;
-                    console.log('💾 Pseudo Discord récupéré:', savedPseudo);
-                }
-                showMainPanel();
-
-                loadAuthorizedUsers();
-                loadLogs();
-            } else {
-                console.log('🚪 Aucun utilisateur connecté');
-                showAuthScreen();
+        // Récupérer les informations du serveur
+        const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}`, {
+            headers: {
+                'Authorization': `Bot ${BOT_TOKEN}`,
             }
+        });
+
+        if (!guildResponse.ok) {
+            if (guildResponse.status === 403) {
+                throw new Error('Le bot n\'a pas accès à ce serveur');
+            } else if (guildResponse.status === 404) {
+                throw new Error('Serveur introuvable');
+            } else {
+                throw new Error(`Erreur ${guildResponse.status}: ${guildResponse.statusText}`);
+            }
+        }
+
+        const guild = await guildResponse.json();
+        selectedServerId = serverId;
+        selectedServerName = guild.name;
+
+        // Récupérer les salons du serveur
+        const channelsResponse = await fetch(`https://discord.com/api/v10/guilds/${serverId}/channels`, {
+            headers: {
+                'Authorization': `Bot ${BOT_TOKEN}`,
+            }
+        });
+
+        if (!channelsResponse.ok) {
+            throw new Error(`Erreur lors de la récupération des salons: ${channelsResponse.status}`);
+        }
+
+        const channels = await channelsResponse.json();
+        
+        // Filtrer seulement les salons texte (type 0) et les fils de discussion (type 11)
+        availableChannels = channels.filter(channel => 
+            channel.type === 0 || channel.type === 5 || channel.type === 11
+        ).sort((a, b) => a.name.localeCompare(b.name));
+
+        displayChannels();
+        showElement(elements.channelView);
+        updateBadges();
+
+    } catch (error) {
+        console.error('Erreur chargement serveur:', error);
+        elements.serverError.textContent = `❌ ${error.message}`;
+        showElement(elements.serverError);
+    } finally {
+        elements.loadServerBtn.disabled = false;
+        elements.loadServerBtn.innerHTML = '🔍 Charger les salons du serveur';
+    }
+}
+
+function displayChannels() {
+    elements.channelsList.innerHTML = '';
+
+    if (availableChannels.length === 0) {
+        elements.channelsList.innerHTML = '<div class="p-4 text-center text-gray-500">Aucun salon accessible trouvé</div>';
+        return;
+    }
+
+    availableChannels.forEach(channel => {
+        const channelDiv = document.createElement('div');
+        channelDiv.className = 'channel-item';
+        channelDiv.onclick = () => selectChannel(channel.id, channel.name);
+
+        const typeIcon = getChannelTypeIcon(channel.type);
+        
+        channelDiv.innerHTML = `
+            <span class="channel-type">${typeIcon}</span>
+            <span class="flex-1">${channel.name}</span>
+        `;
+
+        elements.channelsList.appendChild(channelDiv);
+    });
+}
+
+function getChannelTypeIcon(type) {
+    switch (type) {
+        case 0: return '#'; // Salon texte
+        case 5: return '📢'; // Salon d'annonces
+        case 11: return '🧵'; // Fil de discussion
+        default: return '#';
+    }
+}
+
+function selectChannel(channelId, channelName) {
+    selectedChannel = channelId;
+    selectedChannelName = channelName;
+
+    // Mettre à jour l'affichage
+    elements.channelsList.querySelectorAll('.channel-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+
+    event.currentTarget.classList.add('selected');
+    
+    updateBadges();
+    updateSendButton();
+}
+
+async function sendToDiscord() {
+    if (!selectedImage || !selectedChannel || !selectedServerId) return;
+
+    isLoading = true;
+    updateSendButton();
+    hideElement(elements.sendError);
+
+    try {
+        const response = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bot ${BOT_TOKEN}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: `**${selectedCategory || selectedGame}** - ${selectedWeek}`,
+                embeds: [{
+                    title: `${selectedCategory || selectedGame} - ${selectedWeek}`,
+                    image: {
+                        url: selectedImage
+                    },
+                    color: 0xD4AF37,
+                    footer: {
+                        text: `Envoyé par ${userDiscordPseudo} via Godplace Panel`,
+                    },
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Erreur Discord API (${response.status}): ${errorData.message || 'Erreur inconnue'}`);
+        }
+
+        // Sauvegarder le log
+        await saveLog(
+            'Message envoyé',
+            `Serveur: ${selectedServerName} (${selectedServerId}) | Salon: ${selectedChannelName} | Catégorie: ${selectedCategory || selectedGame} | Option: ${selectedWeek}`
+        );
+
+        alert(`✅ Message envoyé avec succès dans "${selectedChannelName}" sur le serveur "${selectedServerName}" !`);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+
+        await saveLog(
+            'Erreur envoi message',
+            `Erreur: ${error.message} | Serveur: ${selectedServerName} | Salon: ${selectedChannelName}`
+        );
+
+        elements.sendError.textContent = `❌ Erreur lors de l'envoi: ${error.message}`;
+        showElement(elements.sendError);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } finally {
+        isLoading = false;
+        updateSendButton();
+    }
+}
+
+// Fonctions Firebase
+async function saveLog(action, details) {
+    try {
+        await db.collection('logs').add({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            userEmail: currentUser.email,
+            discordPseudo: userDiscordPseudo,
+            action: action,
+            details: details,
+            createdAt: new Date()
         });
     } catch (error) {
-        console.error('❌ Erreur observer auth:', error);
-        showAuthScreen();
+        console.error('Erreur sauvegarde log:', error);
     }
+}
 
-    async function loadAuthorizedUsers() {
-        if (!isAdmin && !isModo) return;
-        
-        try {
-            elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-gray-500">Chargement...</div>';
-            
-            const usersSnapshot = await db.collection('authorized_users').orderBy('pseudo').get();
-            elements.authorizedUsersList.innerHTML = '';
-            
+async function loadAuthorizedUsers() {
+    if (!isAdmin && !isModo) return;
+
+    try {
+        const usersSnapshot = await db.collection('authorized_users').orderBy('pseudo').get();
+        let usersHtml = '';
+
+        if (usersSnapshot.empty) {
+            usersHtml = '<div class="p-5 text-center text-gray-500">Aucun utilisateur autorisé.</div>';
+        } else {
             usersSnapshot.forEach(doc => {
                 const userData = doc.data();
-                const userItem = document.createElement('div');
-                userItem.classList.add('user-item');
-                userItem.innerHTML = `
-                    <div>${userData.pseudo}</div>
-                    <button class="btn btn-danger btn-sm" data-id="${doc.id}">Supprimer</button>
+                const pseudo = doc.id;
+                const addedBy = userData.addedBy || 'Inconnu';
+                const addedAt = userData.addedAt ? userData.addedAt.toDate().toLocaleDateString('fr-FR') : 'Date inconnue';
+
+                usersHtml += `
+                    <div class="user-item">
+                        <div>
+                            <div style="font-weight: 500;">${pseudo}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">
+                                Ajouté par ${addedBy} le ${addedAt}
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.75rem;" onclick="removeAuthorizedUser('${pseudo}')">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
                 `;
-                elements.authorizedUsersList.appendChild(userItem);
-                
-                userItem.querySelector('button').addEventListener('click', async (e) => {
-                    const userId = e.target.dataset.id;
-                    console.log('🗑️ Suppression utilisateur:', userId);
-                    try {
-                        await db.collection('authorized_users').doc(userId).delete();
-                        loadAuthorizedUsers(); // Refresh
-                    } catch (error) {
-                        console.error('Erreur suppression utilisateur:', error);
-                        alert('Erreur suppression utilisateur.');
-                    }
-                });
             });
-        } catch (error) {
-            console.error('Erreur chargement utilisateurs:', error);
-            elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-red-600">Erreur de chargement. Vérifiez vos permissions Firestore.</div>';
         }
+
+        elements.authorizedUsersList.innerHTML = usersHtml;
+    } catch (error) {
+        console.error('Erreur chargement utilisateurs autorisés:', error);
+        elements.authorizedUsersList.innerHTML = '<div class="p-5 text-center text-red-600">Erreur lors du chargement.</div>';
+    }
+}
+
+async function addAuthorizedUser() {
+    const pseudo = elements.newUserPseudo.value.trim();
+    if (!pseudo) {
+        alert('Veuillez entrer un pseudo Discord');
+        return;
     }
 
-    async function loadLogs() {
-        if (!isAdmin && !isModo) return;
-        
-        try {
-            elements.logs.innerHTML = 'Chargement des logs...';
-            
-            const logsSnapshot = await db.collection('logs')
-                .orderBy('timestamp', 'desc')
-                .limit(50)
-                .get();
-            
-            elements.logs.innerHTML = '';
-            
+    if (!isAdmin && !isModo) {
+        alert('Vous n\'avez pas les permissions pour ajouter des utilisateurs');
+        return;
+    }
+
+    try {
+        const doc = await db.collection('authorized_users').doc(pseudo).get();
+        if (doc.exists) {
+            alert('Ce pseudo Discord est déjà autorisé');
+            return;
+        }
+
+        await db.collection('authorized_users').doc(pseudo).set({
+            pseudo: pseudo,
+            addedBy: userDiscordPseudo,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            addedByEmail: currentUser.email
+        });
+
+        await saveLog('Utilisateur autorisé ajouté', `Pseudo Discord ajouté: ${pseudo}`);
+
+        loadAuthorizedUsers();
+        elements.newUserPseudo.value = '';
+        alert(`✅ Pseudo Discord "${pseudo}" ajouté avec succès !`);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } catch (error) {
+        console.error('Erreur ajout utilisateur:', error);
+        alert(`❌ Erreur lors de l'ajout: ${error.message}`);
+    }
+}
+
+async function removeAuthorizedUser(pseudo) {
+    if (!isAdmin && !isModo) {
+        alert('Vous n\'avez pas les permissions pour supprimer des utilisateurs');
+        return;
+    }
+
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${pseudo}" de la liste des utilisateurs autorisés ?`)) {
+        return;
+    }
+
+    try {
+        await db.collection('authorized_users').doc(pseudo).delete();
+
+        await saveLog('Utilisateur autorisé supprimé', `Pseudo Discord supprimé: ${pseudo}`);
+
+        loadAuthorizedUsers();
+        alert(`✅ Pseudo Discord "${pseudo}" supprimé avec succès !`);
+
+        if (isAdmin || isModo) {
+            loadLogs();
+        }
+    } catch (error) {
+        console.error('Erreur suppression utilisateur:', error);
+        alert(`❌ Erreur lors de la suppression: ${error.message}`);
+    }
+}
+
+async function loadLogs() {
+    if (!isAdmin && !isModo) return;
+
+    try {
+        const logsSnapshot = await db.collection('logs')
+            .orderBy('timestamp', 'desc')
+            .limit(50)
+            .get();
+
+        let logsHtml = '';
+
+        if (logsSnapshot.empty) {
+            logsHtml = 'Aucun log disponible.';
+        } else {
             logsSnapshot.forEach(doc => {
-                const logData = doc.data();
-                const logEntry = document.createElement('div');
-                logEntry.classList.add('log-entry');
-                logEntry.innerHTML = `
-                    <div class="text-sm text-gray-600">${new Date(logData.timestamp.seconds * 1000).toLocaleString()}</div>
-                    <div>${logData.message}</div>
+                const log = doc.data();
+                const timestamp = log.timestamp ? log.timestamp.toDate().toLocaleString('fr-FR') : 'Date inconnue';
+
+                logsHtml += `
+                    <div class="log-entry">
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 4px;">${timestamp}</div>
+                        <div style="font-weight: 600; color: #d4af37;">👤 ${log.discordPseudo} (${log.userEmail})</div>
+                        <div style="color: #374151;">🎯 ${log.action}</div>
+                        ${log.details ? `<div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">${log.details}</div>` : ''}
+                    </div>
                 `;
-                elements.logs.appendChild(logEntry);
             });
-        } catch (error) {
-            console.error('Erreur chargement logs:', error);
-            elements.logs.innerHTML = 'Erreur de chargement des logs. Vérifiez vos permissions Firestore.';
         }
-    }
 
-    // Event listeners de base
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('📄 DOM chargé');
+        elements.logs.innerHTML = logsHtml;
+    } catch (error) {
+        console.error('Erreur chargement logs:', error);
+        elements.logs.innerHTML = 'Erreur lors du chargement des logs.';
+    }
+}
+
+// Observer d'authentification
+setTimeout(() => {
+    if (elements.loadingScreen && !elements.loadingScreen.classList.contains('hidden')) {
+        showAuthScreen();
+    }
+}, 10000);
+
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        currentUser = user;
+        const roles = checkUserRole(user.email);
+        isAdmin = roles.isAdmin;
+        isModo = roles.isModo;
+
+        const savedPseudo = localStorage.getItem('discordPseudo');
+        if (savedPseudo) {
+            userDiscordPseudo = savedPseudo;
+        }
+        showMainPanel();
+    } else {
+        showAuthScreen();
+    }
+});
+
+// Event listeners
+document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        const tabName = e.target.dataset.tab;
+        
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+
+        if (tabName === 'login') {
+            showElement(elements.loginForm);
+            hideElement(elements.registerForm);
+        } else {
+            hideElement(elements.loginForm);
+            showElement(elements.registerForm);
+        }
+
+        clearMessages();
     });
+});
 
-    // Gestion des onglets d'authentification
-    document.querySelectorAll('.auth-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            console.log('📑 Changement d\'onglet:', e.target.dataset.tab);
-            const tabName = e.target.dataset.tab;
-            
-            // Mettre à jour les onglets
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
+if (elements.loginForm) {
+    elements.loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const discordPseudo = document.getElementById('loginDiscordPseudo').value;
 
-            // Afficher le bon formulaire
-            if (tabName === 'login') {
-                showElement(elements.loginForm);
-                hideElement(elements.registerForm);
-            } else {
-                hideElement(elements.loginForm);
-                showElement(elements.registerForm);
-            }
-
-            clearMessages();
-        });
+        clearMessages();
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            userDiscordPseudo = discordPseudo;
+            localStorage.setItem('discordPseudo', discordPseudo);
+        } catch (error) {
+            showError(`Erreur de connexion: ${error.message}`);
+        }
     });
+}
 
-    // Event listeners pour l'authentification
-    if (elements.loginForm) {
-        elements.loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('🔐 Tentative de connexion...');
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const discordPseudo = document.getElementById('loginDiscordPseudo').value;
+if (elements.logoutBtn) {
+    elements.logoutBtn.addEventListener('click', async () => {
+        try {
+            await auth.signOut();
+            localStorage.removeItem('discordPseudo');
+            userDiscordPseudo = '';
+            currentUser = null;
+            isAdmin = false;
+            isModo = false;
+        } catch (error) {
+            console.error('Erreur déconnexion:', error);
+        }
+    });
+}
 
-            console.log('📧 Email:', email);
-            console.log('🎮 Discord:', discordPseudo);
-
-            clearMessages();
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                console.log('✅ Connexion réussie');
-                userDiscordPseudo = discordPseudo;
-                localStorage.setItem('discordPseudo', discordPseudo);
-            } catch (error) {
-                console.error('❌ Erreur connexion:', error);
-                showError(`Erreur de connexion: ${error.message}`);
-            }
-        });
+// Event listeners du panel
+elements.categorySelect.addEventListener('change', (e) => {
+    const categoryKey = e.target.value;
+    resetSelection();
+    
+    if (categoryKey === 'jeux') {
+        showView('games');
+    } else if (categoryKey) {
+        selectedCategory = categoryKey;
+        showWeekButtons(categoryKey, false);
     }
+    updateBadges();
+});
 
-    if (elements.logoutBtn) {
-        elements.logoutBtn.addEventListener('click', async () => {
-            console.log('🚪 Déconnexion...');
-            try {
-                await auth.signOut();
-                localStorage.removeItem('discordPseudo');
-                userDiscordPseudo = '';
-                currentUser = null;
-                isAdmin = false;
-                isModo = false;
-            } catch (error) {
-                console.error('❌ Erreur déconnexion:', error);
-            }
-        });
+elements.gamesView.addEventListener('click', (e) => {
+    if (e.target.dataset.game) {
+        selectedGame = e.target.dataset.game;
+        selectedCategory = '';
+        showView('game-detail');
+        showWeekButtons(selectedGame, true);
+        resetSelection();
+        selectedGame = e.target.dataset.game;
+        updateBadges();
     }
+});
 
-    console.log('🎉 Initialisation terminée');
+elements.loadServerBtn.addEventListener('click', loadServerChannels);
+elements.sendBtn.addEventListener('click', sendToDiscord);
+elements.addUserBtn.addEventListener('click', addAuthorizedUser);
+
+elements.newUserPseudo.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        addAuthorizedUser();
+    }
+});
+
+elements.backBtn.addEventListener('click', () => {
+    if (currentView === 'game-detail') {
+        showView('games');
+        selectedGame = '';
+    } else if (currentView === 'games') {
+        showView('main');
+        elements.categorySelect.value = '';
+    }
+    resetSelection();
+});
+
+// Initialisation
+updateBadges();
+updateSendButton();
+
+// Rendre les fonctions globales pour les onclick
+window.removeAuthorizedUser = removeAuthorizedUser;
+
+console.log('🎉 Initialisation terminée');
 </script>
-</body>
-</html>
