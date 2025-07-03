@@ -3,16 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Godplace Panel - Envoi Réel</title>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <!-- Tailwind CSS -->
+    <title>Godplace Panel - Webhooks</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <style>
         .hidden { display: none !important; }
         
@@ -20,10 +12,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             border: none;
@@ -31,24 +22,26 @@
         }
         
         .btn-primary {
-            background: #d4af37;
+            background: linear-gradient(135deg, #d4af37, #b8941f);
             color: white;
-            border: 1px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
         
         .btn-primary:hover {
-            background: #b8941f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
         }
         
         .btn-outline {
-            background: transparent;
+            background: white;
             color: #d4af37;
-            border: 1px solid #d4af37;
+            border: 2px solid #d4af37;
         }
         
         .btn-outline:hover {
             background: #d4af37;
             color: white;
+            transform: translateY(-2px);
         }
         
         .btn-outline.active {
@@ -59,118 +52,66 @@
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-        
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 0.875rem;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #d4af37;
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            margin-top: 16px;
-        }
-        
-        .alert-error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-        }
-        
-        .alert-success {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-        }
-        
-        .alert-warning {
-            background: #fffbeb;
-            border: 1px solid #fed7aa;
-            color: #92400e;
+            transform: none !important;
         }
         
         .card {
             background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 24px;
+            overflow: hidden;
         }
         
         .card-header {
-            padding: 24px 24px 0 24px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
         }
         
         .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: #d4af37;
             margin-bottom: 8px;
         }
         
-        .card-description {
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-        
         .card-content {
-            padding: 24px;
+            padding: 20px;
         }
         
-        .badge {
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin: 2px;
+        .webhook-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .badge-active {
-            background: #d4af37;
+        .webhook-item:hover {
+            border-color: #d4af37;
+            background: #fef3c7;
+            transform: translateY(-1px);
+        }
+        
+        .webhook-item.selected {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
             color: white;
-        }
-        
-        .badge-inactive {
-            background: #f3f4f6;
-            color: #6b7280;
+            border-color: #d4af37;
         }
         
         .grid {
             display: grid;
-            gap: 16px;
+            gap: 12px;
         }
         
-        .grid-cols-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .grid-cols-3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .grid-cols-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
-        
-        .grid-cols-5 {
-            grid-template-columns: repeat(5, 1fr);
-        }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-5 { grid-template-columns: repeat(5, 1fr); }
         
         @media (max-width: 768px) {
             .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5 {
@@ -184,794 +125,528 @@
             }
         }
         
-        .channel-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin: 4px 0;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .channel-item:hover {
-            background: #f9fafb;
-            border-color: #d4af37;
-        }
-        .channel-item.selected {
-            background: #d4af37;
-            color: white;
-            border-color: #d4af37;
-        }
-
-        .debug-info {
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
+        .alert {
+            padding: 16px;
             border-radius: 8px;
-            padding: 12px;
             margin-top: 16px;
-            font-size: 0.75rem;
-            font-family: monospace;
+            font-weight: 500;
         }
-
-        .method-status {
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 4px 0;
-            font-size: 0.875rem;
-        }
-
-        .method-trying {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-        }
-
-        .method-success {
+        
+        .alert-success {
             background: #d1fae5;
-            border: 1px solid #10b981;
+            border: 2px solid #10b981;
             color: #065f46;
         }
-
-        .method-failed {
+        
+        .alert-error {
             background: #fee2e2;
-            border: 1px solid #ef4444;
+            border: 2px solid #ef4444;
             color: #991b1b;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d4af37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="min-h-screen flex items-center justify-center">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto mb-4"></div>
-            <p class="text-gray-600">Chargement...</p>
-        </div>
-    </div>
-
-    <!-- Auth Screen -->
-    <div id="authScreen" class="max-w-md mx-auto mt-20 p-8 bg-white rounded-lg shadow-lg hidden">
-        <div class="text-center mb-8">
-            <div class="text-4xl mb-4">🔐</div>
-            <h1 class="text-2xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
-            <p class="text-gray-600">Connexion requise</p>
-        </div>
-        <form id="loginForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input type="email" id="loginEmail" class="form-input" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                <input type="password" id="loginPassword" class="form-input" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Pseudo Discord</label>
-                <input type="text" id="loginDiscordPseudo" class="form-input" placeholder="VotrePseudo#1234" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-full">
-                🚀 Se connecter
-            </button>
-        </form>
-        <div id="authError" class="alert alert-error hidden"></div>
-    </div>
-
-    <!-- Main Panel -->
-    <div id="mainPanel" class="max-w-6xl mx-auto p-6 space-y-8 hidden">
-        <!-- User Info -->
-        <div class="bg-white p-4 rounded-lg shadow flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <div class="text-2xl">👤</div>
-                <div>
-                    <div class="font-medium" id="userEmail"></div>
-                    <div class="text-sm text-gray-500" id="userDiscord"></div>
-                </div>
-            </div>
-            <button id="logoutBtn" class="btn btn-danger">
-                🚪 Déconnexion
-            </button>
-        </div>
-
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6 space-y-8">
+        
         <!-- Header -->
         <div class="text-center">
-            <h1 class="text-4xl font-bold text-yellow-600 mb-2">Godplace Panel</h1>
-            <p class="text-gray-600 mb-4">Envoi RÉEL vers Discord</p>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent mb-4">
+                🔥 Godplace Panel
+            </h1>
+            <p class="text-gray-600 text-lg">Envoi via Webhooks Discord</p>
         </div>
 
-        <!-- Back Button -->
-        <button id="backBtn" class="btn btn-outline hidden">
-            ← Retour
-        </button>
-
-        <!-- Main Category Selection -->
-        <div id="mainView" class="card">
+        <!-- Category Selection -->
+        <div class="card">
             <div class="card-header">
                 <h2 class="card-title">1. Choisissez une catégorie</h2>
-                <p class="card-description">Sélectionnez la catégorie de contenu à envoyer</p>
+                <p class="text-gray-600">Sélectionnez le contenu à envoyer</p>
             </div>
             <div class="card-content">
-                <select id="categorySelect" class="form-input">
+                <select id="categorySelect" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none text-lg">
                     <option value="">-- Sélectionnez une catégorie --</option>
-                    <option value="Bandeaux">Bandeaux</option>
-                    <option value="mondeEnDeclin">Le Monde en Déclin</option>
-                    <option value="gagneCoeurChrist">Gagne le cœur du Christ</option>
-                    <option value="loueAvecTonArt">Loue avec ton art</option>
-                    <option value="chaineSacree">Chaîne sacrée</option>
-                    <option value="savoirChretien">Savoir chrétien</option>
-                    <option value="jePrefere">Je préfère</option>
-                    <option value="jeDebats">Je débats</option>
-                    <option value="composeTonChant">Compose ton chant</option>
-                    <option value="priereEnChoeur">Prière en chœur</option>
-                    <option value="quiSuisJeBiblique">Qui suis-je biblique</option>
-                    <option value="comprendreApocalypse">Comprendre l'apocalypse</option>
-                    <option value="bibleIllustree">LA Bible illustrée</option>
-                    <option value="cinemaChretien">Cinéma Chrétien</option>
-                    <option value="jeux">Jeux</option>
+                    <option value="Bandeaux">🎯 Bandeaux</option>
+                    <option value="mondeEnDeclin">🌍 Le Monde en Déclin</option>
+                    <option value="gagneCoeurChrist">❤️ Gagne le cœur du Christ</option>
+                    <option value="loueAvecTonArt">🎨 Loue avec ton art</option>
+                    <option value="chaineSacree">⛓️ Chaîne sacrée</option>
+                    <option value="savoirChretien">📚 Savoir chrétien</option>
+                    <option value="jePrefere">🤔 Je préfère</option>
+                    <option value="jeDebats">💬 Je débats</option>
+                    <option value="composeTonChant">🎵 Compose ton chant</option>
+                    <option value="priereEnChoeur">🙏 Prière en chœur</option>
+                    <option value="quiSuisJeBiblique">❓ Qui suis-je biblique</option>
+                    <option value="comprendreApocalypse">📖 Comprendre l'apocalypse</option>
+                    <option value="bibleIllustree">📚 LA Bible illustrée</option>
+                    <option value="cinemaChretien">🎬 Cinéma Chrétien</option>
                 </select>
             </div>
         </div>
 
-        <!-- Games Selection -->
-        <div id="gamesView" class="card hidden">
-            <div class="card-header">
-                <h2 class="card-title">Choisissez un jeu</h2>
-                <p class="card-description">Sélectionnez le type de jeu</p>
-            </div>
-            <div class="card-content">
-                <div class="grid grid-cols-2 gap-4">
-                    <button class="btn btn-outline h-20 text-lg" data-game="grilleDeLumiere">
-                        Grille de lumière
-                    </button>
-                    <button class="btn btn-outline h-20 text-lg" data-game="eclaireurs">
-                        Éclaireurs
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Week Selection -->
-        <div id="weekView" class="card hidden">
+        <div id="weekSection" class="card hidden">
             <div class="card-header">
                 <h2 class="card-title">2. Choisissez une option</h2>
-                <p id="weekDescription" class="card-description">Sélectionnez une option</p>
+                <p id="weekDescription" class="text-gray-600">Sélectionnez une option</p>
             </div>
             <div class="card-content">
-                <div id="weekButtons" class="grid grid-cols-5 gap-2"></div>
+                <div id="weekButtons" class="grid grid-cols-5 gap-3"></div>
             </div>
         </div>
 
         <!-- Image Preview -->
-        <div id="previewView" class="card hidden">
+        <div id="previewSection" class="card hidden">
             <div class="card-header">
                 <h2 class="card-title">👁️ 3. Aperçu</h2>
-                <p class="card-description">Prévisualisation de l'image sélectionnée</p>
+                <p class="text-gray-600">Prévisualisation de l'image sélectionnée</p>
             </div>
             <div class="card-content">
                 <div class="text-center">
-                    <img id="previewImage" src="/placeholder.svg" alt="Aperçu de l'image sélectionnée" 
-                         class="max-w-full h-auto border-2 border-yellow-600 rounded-lg shadow-lg mx-auto" 
-                         style="max-height: 400px;">
+                    <img id="previewImage" src="/placeholder.svg" alt="Aperçu" 
+                         class="max-w-full h-auto border-4 border-yellow-600 rounded-lg shadow-xl mx-auto" 
+                         style="max-height: 500px;">
                 </div>
             </div>
         </div>
 
-        <!-- Channel Selection -->
-        <div id="channelView" class="card hidden">
+        <!-- Webhook Selection -->
+        <div id="webhookSection" class="card hidden">
             <div class="card-header">
                 <h2 class="card-title">4. Choisissez un salon Discord</h2>
-                <p class="card-description">Le bot enverra l'image dans le salon sélectionné</p>
+                <p class="text-gray-600">Sélectionnez où envoyer le contenu</p>
             </div>
             <div class="card-content space-y-4">
-                <div class="space-y-2">
-                    <div class="channel-item" data-channel="1378679774742056974" data-name="Grille de lumière">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Grille de lumière</span>
-                    </div>
-                    <div class="channel-item" data-channel="1378680922928320653" data-name="Éclaireurs">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Éclaireurs</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922071473295411" data-name="Entre frères et soeurs en christ">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Entre frères et soeurs en christ</span>
-                    </div>
-                    <div class="channel-item" data-channel="1365417738436087909" data-name="Je préfères G1">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Je préfères G1</span>
-                    </div>
-                    <div class="channel-item" data-channel="1365417832774635540" data-name="Je préfères G2">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Je préfères G2</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042309966073856" data-name="Savoir chrétien G1">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G1</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042329393954887" data-name="Savoir chrétien G2">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G2</span>
-                    </div>
-                    <div class="channel-item" data-channel="1369042347492380693" data-name="Savoir chrétien G3">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Savoir chrétien G3</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922077454110731" data-name="Carnet chretien">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Carnet chretien</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922087143080056" data-name="Loue avec ton art">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Loue avec ton art</span>
-                    </div>
-                    <div class="channel-item" data-channel="1325922084739612794" data-name="Chaîne sacrée">
-                        <span class="mr-3">#</span>
-                        <span class="flex-1">Chaîne sacrée</span>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="webhookList">
+                    <!-- Les webhooks seront ajoutés ici -->
                 </div>
                 
-                <!-- Debug Info -->
-                <div id="debugInfo" class="debug-info hidden">
-                    <div><strong>🔍 Debug Info:</strong></div>
-                    <div id="debugContent"></div>
-                </div>
-
-                <!-- Method Status -->
-                <div id="methodStatus" class="hidden"></div>
-                
-                <button id="sendBtn" class="btn btn-primary w-full" disabled>
-                    📤 Envoyer VRAIMENT dans Discord
+                <button id="sendBtn" class="btn btn-primary w-full text-lg py-4" disabled>
+                    📤 Envoyer via Webhook
                 </button>
-                <div id="sendError" class="alert alert-error hidden"></div>
-                <div id="sendSuccess" class="alert alert-success hidden"></div>
-                <div id="sendWarning" class="alert alert-warning hidden"></div>
+                
+                <div id="sendResult"></div>
             </div>
         </div>
 
-        <!-- Status Badges -->
-        <div class="flex flex-wrap gap-2 justify-center">
-            <span id="categoryBadge" class="badge badge-inactive">Catégorie: Non sélectionnée</span>
-            <span id="weekBadge" class="badge badge-inactive">Option: Non sélectionnée</span>
-            <span id="channelBadge" class="badge badge-inactive">Salon: Non sélectionné</span>
+        <!-- Status -->
+        <div class="flex flex-wrap gap-3 justify-center">
+            <span id="categoryBadge" class="px-4 py-2 rounded-full text-sm font-semibold bg-gray-200 text-gray-600">
+                📁 Catégorie: Non sélectionnée
+            </span>
+            <span id="weekBadge" class="px-4 py-2 rounded-full text-sm font-semibold bg-gray-200 text-gray-600">
+                📋 Option: Non sélectionnée
+            </span>
+            <span id="webhookBadge" class="px-4 py-2 rounded-full text-sm font-semibold bg-gray-200 text-gray-600">
+                💬 Salon: Non sélectionné
+            </span>
         </div>
     </div>
 
     <script>
-console.log('🚀 Démarrage de l\'application RÉELLE...');
+        // 🔥 CONFIGURATION DES WEBHOOKS DISCORD
+        const WEBHOOKS = {
+            'grille-lumiere': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_1/VOTRE_WEBHOOK_TOKEN_1',
+            'eclaireurs': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_2/VOTRE_WEBHOOK_TOKEN_2',
+            'entre-freres': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_3/VOTRE_WEBHOOK_TOKEN_3',
+            'je-prefere-g1': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_4/VOTRE_WEBHOOK_TOKEN_4',
+            'je-prefere-g2': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_5/VOTRE_WEBHOOK_TOKEN_5',
+            'savoir-chretien-g1': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_6/VOTRE_WEBHOOK_TOKEN_6',
+            'savoir-chretien-g2': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_7/VOTRE_WEBHOOK_TOKEN_7',
+            'savoir-chretien-g3': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_8/VOTRE_WEBHOOK_TOKEN_8',
+            'carnet-chretien': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_9/VOTRE_WEBHOOK_TOKEN_9',
+            'loue-avec-ton-art': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_10/VOTRE_WEBHOOK_TOKEN_10',
+            'chaine-sacree': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_11/VOTRE_WEBHOOK_TOKEN_11'
+        };
 
-// Configuration Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyDuY1T6HaxfDbEcZZYOrpDcD5LPNUTmeUc",
-    authDomain: "godplace-dea67.firebaseapp.com",
-    projectId: "godplace-dea67",
-    storageBucket: "godplace-dea67.firebasestorage.app",
-    messagingSenderId: "774010087004",
-    appId: "1:774010087004:web:31346dfbc1b2adfed2e899",
-    measurementId: "G-HNXY5FDSZK"
-};
-
-// Initialiser Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// TOKEN DISCORD BOT
-const DISCORD_BOT_TOKEN = 'MTM2NTQyNjA0MzUzNTYyNjM2MQ.G0bRyj.Ili2DBVd7bJFUggRz2jiXUCwrxdl0Z7r9n4TsA';
-
-// Variables globales
-let currentUser = null;
-let userDiscordPseudo = '';
-let currentView = 'main';
-let selectedCategory = '';
-let selectedGame = '';
-let selectedWeek = '';
-let selectedChannel = '';
-let selectedChannelName = '';
-let selectedImage = '';
-let isLoading = false;
-
-// Données des catégories (version courte pour test)
-const categories = {
-    Bandeaux: {
-        title: "Bandeaux",
-        weeks: {
-            "à vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
-            "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png"
-        }
-    },
-    mondeEnDeclin: {
-        title: "Le Monde en Déclin",
-        weeks: {
-            "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
-            "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png"
-        }
-    }
-};
-
-const gameCategories = {
-    grilleDeLumiere: {
-        title: "Grille de lumière",
-        buttons: {
-            "Grille de lumière 1": "https://media.discordapp.net/attachments/1365412596655853699/1381746959072628826/PLATEAUX_CODES_SACRES_-_3.png",
-            "Grille de lumière 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747211351883867/PLATEAUX_CODES_SACRES_-_6.png"
-        }
-    },
-    eclaireurs: {
-        title: "Éclaireurs",
-        buttons: {
-            "Éclaireurs 1": "https://media.discordapp.net/attachments/1365412596655853699/1381747093592342528/PLATEAUX_CODES_SACRES_-_4.png",
-            "Éclaireurs 2": "https://media.discordapp.net/attachments/1365412596655853699/1381747251466211559/PLATEAUX_CODES_SACRES_-_7.png"
-        }
-    }
-};
-
-// Éléments DOM
-const elements = {
-    loadingScreen: document.getElementById('loadingScreen'),
-    authScreen: document.getElementById('authScreen'),
-    mainPanel: document.getElementById('mainPanel'),
-    loginForm: document.getElementById('loginForm'),
-    authError: document.getElementById('authError'),
-    userEmail: document.getElementById('userEmail'),
-    userDiscord: document.getElementById('userDiscord'),
-    logoutBtn: document.getElementById('logoutBtn'),
-    mainView: document.getElementById('mainView'),
-    gamesView: document.getElementById('gamesView'),
-    weekView: document.getElementById('weekView'),
-    previewView: document.getElementById('previewView'),
-    channelView: document.getElementById('channelView'),
-    backBtn: document.getElementById('backBtn'),
-    categorySelect: document.getElementById('categorySelect'),
-    weekButtons: document.getElementById('weekButtons'),
-    weekDescription: document.getElementById('weekDescription'),
-    previewImage: document.getElementById('previewImage'),
-    sendBtn: document.getElementById('sendBtn'),
-    sendError: document.getElementById('sendError'),
-    sendSuccess: document.getElementById('sendSuccess'),
-    sendWarning: document.getElementById('sendWarning'),
-    categoryBadge: document.getElementById('categoryBadge'),
-    weekBadge: document.getElementById('weekBadge'),
-    channelBadge: document.getElementById('channelBadge'),
-    debugInfo: document.getElementById('debugInfo'),
-    debugContent: document.getElementById('debugContent'),
-    methodStatus: document.getElementById('methodStatus')
-};
-
-// Fonctions utilitaires
-function showElement(element) {
-    if (element) element.classList.remove('hidden');
-}
-
-function hideElement(element) {
-    if (element) element.classList.add('hidden');
-}
-
-function showError(message) {
-    if (elements.authError) {
-        elements.authError.textContent = message;
-        showElement(elements.authError);
-    }
-}
-
-function addMethodStatus(message, type = 'trying') {
-    const statusDiv = document.createElement('div');
-    statusDiv.className = `method-status method-${type}`;
-    statusDiv.textContent = message;
-    elements.methodStatus.appendChild(statusDiv);
-    showElement(elements.methodStatus);
-}
-
-function updateDebug(info) {
-    elements.debugContent.innerHTML = JSON.stringify(info, null, 2);
-    showElement(elements.debugInfo);
-}
-
-function showAuthScreen() {
-    hideElement(elements.loadingScreen);
-    showElement(elements.authScreen);
-    hideElement(elements.mainPanel);
-}
-
-function showMainPanel() {
-    hideElement(elements.loadingScreen);
-    hideElement(elements.authScreen);
-    showElement(elements.mainPanel);
-    if (elements.userEmail && currentUser) {
-        elements.userEmail.textContent = currentUser.email;
-    }
-    if (elements.userDiscord) {
-        elements.userDiscord.textContent = `Discord: ${userDiscordPseudo}`;
-    }
-}
-
-function hideAllViews() {
-    hideElement(elements.mainView);
-    hideElement(elements.gamesView);
-    hideElement(elements.weekView);
-    hideElement(elements.previewView);
-    hideElement(elements.channelView);
-}
-
-function showView(viewName) {
-    hideAllViews();
-    currentView = viewName;
-    if (viewName === 'main') {
-        showElement(elements.mainView);
-        hideElement(elements.backBtn);
-    } else if (viewName === 'games') {
-        showElement(elements.gamesView);
-        showElement(elements.backBtn);
-    } else if (viewName === 'game-detail') {
-        showElement(elements.weekView);
-        showElement(elements.backBtn);
-    }
-}
-
-function resetSelection() {
-    selectedCategory = '';
-    selectedGame = '';
-    selectedWeek = '';
-    selectedChannel = '';
-    selectedChannelName = '';
-    selectedImage = '';
-    hideElement(elements.previewView);
-    hideElement(elements.channelView);
-    hideElement(elements.debugInfo);
-    hideElement(elements.methodStatus);
-    elements.methodStatus.innerHTML = '';
-    updateBadges();
-    updateSendButton();
-}
-
-function updateBadges() {
-    const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : selectedGame ? gameCategories[selectedGame]?.title : 'Non sélectionnée';
-    elements.categoryBadge.textContent = `Catégorie: ${categoryTitle}`;
-    elements.categoryBadge.className = `badge ${selectedCategory || selectedGame ? 'badge-active' : 'badge-inactive'}`;
-
-    elements.weekBadge.textContent = `Option: ${selectedWeek || 'Non sélectionnée'}`;
-    elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
-
-    elements.channelBadge.textContent = `Salon: ${selectedChannelName || 'Non sélectionné'}`;
-    elements.channelBadge.className = `badge ${selectedChannel ? 'badge-active' : 'badge-inactive'}`;
-}
-
-function updateSendButton() {
-    const canSend = selectedImage && selectedChannel && !isLoading;
-    elements.sendBtn.disabled = !canSend;
-    elements.sendBtn.textContent = isLoading ? '⏳ Envoi en cours...' : '📤 Envoyer VRAIMENT dans Discord';
-}
-
-function showWeekButtons(categoryKey, isGame = false) {
-    elements.weekButtons.innerHTML = '';
-    const data = isGame ? gameCategories[categoryKey]?.buttons : categories[categoryKey]?.weeks;
-    if (!data) return;
-
-    const itemCount = Object.keys(data).length;
-    let gridClass = 'grid-cols-3';
-    if (itemCount >= 10) {
-        gridClass = 'grid-cols-5';
-    } else if (itemCount >= 6) {
-        gridClass = 'grid-cols-4';
-    } else if (itemCount >= 4) {
-        gridClass = 'grid-cols-3';
-    } else {
-        gridClass = 'grid-cols-2';
-    }
-
-    elements.weekButtons.className = `grid ${gridClass} gap-2`;
-
-    Object.keys(data).forEach(week => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-outline';
-        btn.style.height = 'auto';
-        btn.style.padding = '8px';
-        btn.style.fontSize = '0.75rem';
-        btn.textContent = week;
-        btn.onclick = () => selectWeek(week, data[week]);
-        if (!data[week]) {
-            btn.disabled = true;
-        }
-        elements.weekButtons.appendChild(btn);
-    });
-
-    const title = isGame ? gameCategories[categoryKey]?.title : categories[categoryKey]?.title;
-    elements.weekDescription.textContent = `Sélectionnez une option pour ${title}`;
-    showElement(elements.weekView);
-}
-
-function selectWeek(week, imageUrl) {
-    selectedWeek = week;
-    selectedImage = imageUrl;
-
-    elements.weekButtons.querySelectorAll('button').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.textContent === week) {
-            btn.classList.add('active');
-        }
-    });
-
-    elements.previewImage.src = imageUrl;
-    showElement(elements.previewView);
-    showElement(elements.channelView);
-    updateBadges();
-    updateSendButton();
-}
-
-// FONCTION D'ENVOI RÉEL VERS DISCORD
-async function sendToDiscord() {
-    if (!selectedImage || !selectedChannel) return;
-
-    isLoading = true;
-    updateSendButton();
-    hideElement(elements.sendError);
-    hideElement(elements.sendSuccess);
-    hideElement(elements.sendWarning);
-    elements.methodStatus.innerHTML = '';
-
-    const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : gameCategories[selectedGame]?.title;
-    const content = `**${categoryTitle}** - ${selectedWeek}`;
-    
-    updateDebug({
-        channel: selectedChannel,
-        channelName: selectedChannelName,
-        image: selectedImage,
-        content: content,
-        token: DISCORD_BOT_TOKEN ? 'Présent' : 'Manquant'
-    });
-
-    console.log('🚀 ENVOI RÉEL vers Discord:', {
-        channel: selectedChannel,
-        channelName: selectedChannelName,
-        image: selectedImage,
-        content: content
-    });
-
-    try {
-        addMethodStatus('🔄 Méthode 1: Envoi direct via Discord API...', 'trying');
-
-        // Télécharger l'image d'abord
-        const imageResponse = await fetch(selectedImage);
-        if (!imageResponse.ok) {
-            throw new Error(`Erreur téléchargement image: ${imageResponse.status}`);
-        }
-        const imageBlob = await imageResponse.blob();
-        
-        addMethodStatus('✅ Image téléchargée avec succès', 'success');
-
-        // Créer FormData pour Discord
-        const formData = new FormData();
-        formData.append('content', content);
-        formData.append('files[0]', imageBlob, 'image.png');
-
-        // Envoyer à Discord
-        const discordResponse = await fetch(`https://discord.com/api/v10/channels/${selectedChannel}/messages`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bot ${DISCORD_BOT_TOKEN}`
+        // 📋 DONNÉES DES CATÉGORIES
+        const categories = {
+            Bandeaux: {
+                title: "Bandeaux",
+                weeks: {
+                    "à vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
+                    "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png",
+                    "Place à la victoire": "https://media.discordapp.net/attachments/1365412596655853699/1365449855157407754/BANDEAUX_-_29.png",
+                    "Team oui ou team non": "https://media.discordapp.net/attachments/1365412596655853699/1365449952163266712/BANDEAUX_-_31.png",
+                    "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365450022350749717/BANDEAUX_-_23.png",
+                    "face à face": "https://media.discordapp.net/attachments/1365412596655853699/1365450102835249172/BANDEAUX_-_33.png",
+                    "à vos votes": "https://media.discordapp.net/attachments/1365412596655853699/1365450176457609216/BANDEAUX_-_35.png",
+                    "Installez-vous": "https://media.discordapp.net/attachments/1365412596655853699/1365450239045144576/BANDEAUX_-_36.png",
+                    "on papote": "https://media.discordapp.net/attachments/1365412596655853699/1365450337854427267/BANDEAUX_-_37.png",
+                    "à vos Bibles": "https://media.discordapp.net/attachments/1365412596655853699/1365450502476795945/BANDEAUX_-_39.png"
+                }
             },
-            body: formData
+            mondeEnDeclin: {
+                title: "Le Monde en Déclin",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725348314222754/FICHES_SPECIFIQUES_PETIT_FORMAT_-_6.png"
+                }
+            },
+            gagneCoeurChrist: {
+                title: "Gagne le cœur du Christ",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725653625864284/FICHES_SPECIFIQUES_PETIT_FORMAT_-_13.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725697045434488/FICHES_SPECIFIQUES_PETIT_FORMAT_-_14.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725725654782062/FICHES_SPECIFIQUES_PETIT_FORMAT_-_15.png"
+                }
+            },
+            loueAvecTonArt: {
+                title: "Loue avec ton art",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725770085040218/FICHES_SPECIFIQUES_PETIT_FORMAT_-_16.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725825047068722/FICHES_SPECIFIQUES_PETIT_FORMAT_-_17.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725866457567416/FICHES_SPECIFIQUES_PETIT_FORMAT_-_18.png"
+                }
+            },
+            chaineSacree: {
+                title: "Chaîne sacrée",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725911411851344/FICHES_SPECIFIQUES_PETIT_FORMAT_-_19.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725981528166450/FICHES_SPECIFIQUES_PETIT_FORMAT_-_20.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726016988465158/FICHES_SPECIFIQUES_PETIT_FORMAT_-_21.png"
+                }
+            },
+            savoirChretien: {
+                title: "Savoir chrétien",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726058002784767/FICHES_SPECIFIQUES_PETIT_FORMAT_-_22.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726094986149378/FICHES_SPECIFIQUES_PETIT_FORMAT_-_23.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726124882736641/FICHES_SPECIFIQUES_PETIT_FORMAT_-_24.png"
+                }
+            },
+            jePrefere: {
+                title: "Je préfère",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726155632450067/FICHES_SPECIFIQUES_PETIT_FORMAT_-_25.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726183903265536/FICHES_SPECIFIQUES_PETIT_FORMAT_-_26.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726215589114901/FICHES_SPECIFIQUES_PETIT_FORMAT_-_27.png"
+                }
+            },
+            jeDebats: {
+                title: "Je débats",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726250338652418/FICHES_SPECIFIQUES_PETIT_FORMAT_-_28.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726283172867072/FICHES_SPECIFIQUES_PETIT_FORMAT_-_29.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726313883936275/FICHES_SPECIFIQUES_PETIT_FORMAT_-_30.png"
+                }
+            },
+            composeTonChant: {
+                title: "Compose ton chant",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726345386018823/FICHES_SPECIFIQUES_PETIT_FORMAT_-_31.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726374519505411/FICHES_SPECIFIQUES_PETIT_FORMAT_-_32.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726412025523506/FICHES_SPECIFIQUES_PETIT_FORMAT_-_33.png"
+                }
+            },
+            priereEnChoeur: {
+                title: "Prière en chœur",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726445561549856/FICHES_SPECIFIQUES_PETIT_FORMAT_-_34.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726477503522300/FICHES_SPECIFIQUES_PETIT_FORMAT_-_35.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726504952314986/FICHES_SPECIFIQUES_PETIT_FORMAT_-_36.png"
+                }
+            },
+            quiSuisJeBiblique: {
+                title: "Qui suis-je biblique",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726536286921778/FICHES_SPECIFIQUES_PETIT_FORMAT_-_37.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726566499025000/FICHES_SPECIFIQUES_PETIT_FORMAT_-_38.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726598318859014/FICHES_SPECIFIQUES_PETIT_FORMAT_-_39.png"
+                }
+            },
+            comprendreApocalypse: {
+                title: "Comprendre l'apocalypse",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726630002579476/FICHES_SPECIFIQUES_PETIT_FORMAT_-_40.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726663403672848/FICHES_SPECIFIQUES_PETIT_FORMAT_-_41.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726700276018184/FICHES_SPECIFIQUES_PETIT_FORMAT_-_42.png"
+                }
+            },
+            bibleIllustree: {
+                title: "LA Bible illustrée",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726733322940924/FICHES_SPECIFIQUES_PETIT_FORMAT_-_43.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726763165978650/FICHES_SPECIFIQUES_PETIT_FORMAT_-_44.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726794945651970/FICHES_SPECIFIQUES_PETIT_FORMAT_-_45.png"
+                }
+            },
+            cinemaChretien: {
+                title: "Cinéma Chrétien",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726824389902396/FICHES_SPECIFIQUES_PETIT_FORMAT_-_46.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726860361834760/FICHES_SPECIFIQUES_PETIT_FORMAT_-_47.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726891917857532/FICHES_SPECIFIQUES_PETIT_FORMAT_-_48.png"
+                }
+            }
+        };
+
+        // 🎯 LISTE DES SALONS AVEC WEBHOOKS
+        const webhookChannels = [
+            { id: 'grille-lumiere', name: '🔆 Grille de lumière', emoji: '🔆' },
+            { id: 'eclaireurs', name: '🔍 Éclaireurs', emoji: '🔍' },
+            { id: 'entre-freres', name: '👥 Entre frères et soeurs en christ', emoji: '👥' },
+            { id: 'je-prefere-g1', name: '🤔 Je préfères G1', emoji: '🤔' },
+            { id: 'je-prefere-g2', name: '🤔 Je préfères G2', emoji: '🤔' },
+            { id: 'savoir-chretien-g1', name: '📚 Savoir chrétien G1', emoji: '📚' },
+            { id: 'savoir-chretien-g2', name: '📚 Savoir chrétien G2', emoji: '📚' },
+            { id: 'savoir-chretien-g3', name: '📚 Savoir chrétien G3', emoji: '📚' },
+            { id: 'carnet-chretien', name: '📖 Carnet chrétien', emoji: '📖' },
+            { id: 'loue-avec-ton-art', name: '🎨 Loue avec ton art', emoji: '🎨' },
+            { id: 'chaine-sacree', name: '⛓️ Chaîne sacrée', emoji: '⛓️' }
+        ];
+
+        // Variables globales
+        let selectedCategory = '';
+        let selectedWeek = '';
+        let selectedImage = '';
+        let selectedWebhook = '';
+        let selectedWebhookName = '';
+        let isSending = false;
+
+        // Éléments DOM
+        const elements = {
+            categorySelect: document.getElementById('categorySelect'),
+            weekSection: document.getElementById('weekSection'),
+            weekDescription: document.getElementById('weekDescription'),
+            weekButtons: document.getElementById('weekButtons'),
+            previewSection: document.getElementById('previewSection'),
+            previewImage: document.getElementById('previewImage'),
+            webhookSection: document.getElementById('webhookSection'),
+            webhookList: document.getElementById('webhookList'),
+            sendBtn: document.getElementById('sendBtn'),
+            sendResult: document.getElementById('sendResult'),
+            categoryBadge: document.getElementById('categoryBadge'),
+            weekBadge: document.getElementById('weekBadge'),
+            webhookBadge: document.getElementById('webhookBadge')
+        };
+
+        // 🎯 FONCTIONS UTILITAIRES
+        function showElement(element) {
+            if (element) element.classList.remove('hidden');
+        }
+
+        function hideElement(element) {
+            if (element) element.classList.add('hidden');
+        }
+
+        function updateBadges() {
+            const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : 'Non sélectionnée';
+            elements.categoryBadge.textContent = `📁 Catégorie: ${categoryTitle}`;
+            elements.categoryBadge.className = `px-4 py-2 rounded-full text-sm font-semibold ${selectedCategory ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-200 text-gray-600'}`;
+
+            elements.weekBadge.textContent = `📋 Option: ${selectedWeek || 'Non sélectionnée'}`;
+            elements.weekBadge.className = `px-4 py-2 rounded-full text-sm font-semibold ${selectedWeek ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-200 text-gray-600'}`;
+
+            elements.webhookBadge.textContent = `💬 Salon: ${selectedWebhookName || 'Non sélectionné'}`;
+            elements.webhookBadge.className = `px-4 py-2 rounded-full text-sm font-semibold ${selectedWebhook ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' : 'bg-gray-200 text-gray-600'}`;
+        }
+
+        function updateSendButton() {
+            const canSend = selectedImage && selectedWebhook && !isSending;
+            elements.sendBtn.disabled = !canSend;
+            elements.sendBtn.innerHTML = isSending ? '<div class="loading"></div> Envoi en cours...' : '📤 Envoyer via Webhook';
+        }
+
+        function getGridClass(itemCount) {
+            if (itemCount >= 10) return 'grid-cols-5';
+            if (itemCount >= 6) return 'grid-cols-4';
+            if (itemCount >= 4) return 'grid-cols-3';
+            return 'grid-cols-2';
+        }
+
+        // 🎯 GESTION DES ÉVÉNEMENTS
+        elements.categorySelect.addEventListener('change', (e) => {
+            selectedCategory = e.target.value;
+            selectedWeek = '';
+            selectedImage = '';
+            selectedWebhook = '';
+            selectedWebhookName = '';
+
+            if (selectedCategory) {
+                showWeekButtons();
+                showElement(elements.weekSection);
+            } else {
+                hideElement(elements.weekSection);
+                hideElement(elements.previewSection);
+                hideElement(elements.webhookSection);
+            }
+            updateBadges();
+            updateSendButton();
         });
 
-        if (discordResponse.ok) {
-            addMethodStatus('✅ Message envoyé avec succès !', 'success');
-            
-            // Sauvegarder le log
-            await saveLog(
-                'Message envoyé avec succès',
-                `Salon: ${selectedChannelName} (${selectedChannel}) | Catégorie: ${categoryTitle} | Option: ${selectedWeek}`
-            );
+        function showWeekButtons() {
+            const data = categories[selectedCategory]?.weeks;
+            if (!data) return;
 
-            elements.sendSuccess.textContent = `✅ Message envoyé avec succès dans "${selectedChannelName}" !`;
-            showElement(elements.sendSuccess);
+            elements.weekButtons.innerHTML = '';
+            const itemCount = Object.keys(data).length;
+            elements.weekButtons.className = `grid ${getGridClass(itemCount)} gap-3`;
 
-        } else {
-            const errorText = await discordResponse.text();
-            addMethodStatus(`❌ Erreur Discord API: ${discordResponse.status}`, 'failed');
+            elements.weekDescription.textContent = `Sélectionnez une option pour ${categories[selectedCategory]?.title}`;
+
+            Object.keys(data).forEach(week => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline';
+                btn.style.minHeight = '60px';
+                btn.textContent = week;
+                btn.onclick = () => selectWeek(week, data[week]);
+                elements.weekButtons.appendChild(btn);
+            });
+        }
+
+        function selectWeek(week, imageUrl) {
+            selectedWeek = week;
+            selectedImage = imageUrl;
+
+            // Mettre à jour les boutons
+            elements.weekButtons.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === week) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Afficher l'aperçu
+            elements.previewImage.src = imageUrl;
+            showElement(elements.previewSection);
             
-            // Essayer méthode alternative
-            addMethodStatus('🔄 Méthode 2: Tentative avec proxy CORS...', 'trying');
+            // Afficher les webhooks
+            showWebhooks();
+            showElement(elements.webhookSection);
             
+            updateBadges();
+            updateSendButton();
+        }
+
+        function showWebhooks() {
+            elements.webhookList.innerHTML = '';
+            
+            webhookChannels.forEach(channel => {
+                const div = document.createElement('div');
+                div.className = 'webhook-item';
+                div.innerHTML = `
+                    <span class="mr-3 text-xl">${channel.emoji}</span>
+                    <span class="flex-1 font-medium">${channel.name}</span>
+                `;
+                div.onclick = () => selectWebhook(channel.id, channel.name);
+                elements.webhookList.appendChild(div);
+            });
+        }
+
+        function selectWebhook(webhookId, webhookName) {
+            selectedWebhook = webhookId;
+            selectedWebhookName = webhookName;
+
+            // Mettre à jour la sélection visuelle
+            elements.webhookList.querySelectorAll('.webhook-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            updateBadges();
+            updateSendButton();
+        }
+
+        // 🚀 FONCTION D'ENVOI VIA WEBHOOK
+        async function sendToWebhook() {
+            if (!selectedImage || !selectedWebhook) return;
+
+            isSending = true;
+            updateSendButton();
+            elements.sendResult.innerHTML = '';
+
             try {
-                // Utiliser un proxy CORS
-                const proxyResponse = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(`https://discord.com/api/v10/channels/${selectedChannel}/messages`), {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bot ${DISCORD_BOT_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        content: content,
-                        embeds: [{
-                            title: `${categoryTitle} - ${selectedWeek}`,
-                            image: { url: selectedImage },
-                            color: 0xd4af37
-                        }]
-                    })
+                const webhookUrl = WEBHOOKS[selectedWebhook];
+                if (!webhookUrl || webhookUrl.includes('VOTRE_WEBHOOK')) {
+                    throw new Error('Webhook non configuré pour ce salon');
+                }
+
+                console.log('🚀 Envoi via webhook:', {
+                    webhook: selectedWebhook,
+                    name: selectedWebhookName,
+                    category: selectedCategory,
+                    week: selectedWeek,
+                    image: selectedImage
                 });
 
-                if (proxyResponse.ok) {
-                    addMethodStatus('✅ Envoi réussi via proxy !', 'success');
-                    elements.sendSuccess.textContent = `✅ Message envoyé via proxy dans "${selectedChannelName}" !`;
-                    showElement(elements.sendSuccess);
+                // Préparer le message
+                const message = {
+                    content: `**${categories[selectedCategory]?.title}** - ${selectedWeek}`,
+                    embeds: [{
+                        title: `${categories[selectedCategory]?.title} - ${selectedWeek}`,
+                        image: {
+                            url: selectedImage
+                        },
+                        color: 0xd4af37,
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                // Envoyer via webhook
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+
+                if (response.ok) {
+                    elements.sendResult.innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ Message envoyé avec succès dans "${selectedWebhookName}" !
+                        </div>
+                    `;
+                    console.log('✅ Envoi réussi !');
                 } else {
-                    throw new Error(`Proxy failed: ${proxyResponse.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`Erreur webhook: ${response.status} - ${errorText}`);
                 }
-            } catch (proxyError) {
-                addMethodStatus('❌ Proxy CORS échoué', 'failed');
-                throw new Error(`Discord API: ${discordResponse.status} - ${errorText}`);
+
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                elements.sendResult.innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ Erreur lors de l'envoi: ${error.message}
+                        <br><br>
+                        <strong>💡 Solutions :</strong><br>
+                        1. Vérifiez que le webhook est correctement configuré<br>
+                        2. Vérifiez que l'URL du webhook est valide<br>
+                        3. Le webhook a peut-être été supprimé ou désactivé
+                    </div>
+                `;
+            } finally {
+                isSending = false;
+                updateSendButton();
             }
         }
 
-    } catch (error) {
-        console.error('❌ Erreur complète:', error);
-        addMethodStatus(`❌ Toutes les méthodes ont échoué: ${error.message}`, 'failed');
-        
-        await saveLog(
-            'Erreur envoi message',
-            `Erreur: ${error.message} | Salon: ${selectedChannelName} (${selectedChannel})`
-        );
-        
-        elements.sendError.textContent = `❌ Erreur: ${error.message}`;
-        showElement(elements.sendError);
+        // Event listener pour le bouton d'envoi
+        elements.sendBtn.addEventListener('click', sendToWebhook);
 
-        // Afficher un avertissement avec des solutions
-        elements.sendWarning.innerHTML = `
-            <strong>🔧 Solutions possibles :</strong><br>
-            1. Vérifiez que le bot a les permissions dans le salon<br>
-            2. Vérifiez que l'ID du salon est correct<br>
-            3. Le token du bot est peut-être expiré<br>
-            4. Problème de CORS - essayez depuis un serveur
-        `;
-        showElement(elements.sendWarning);
-    } finally {
-        isLoading = false;
-        updateSendButton();
-    }
-}
-
-async function saveLog(action, details) {
-    try {
-        await db.collection('logs').add({
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            userEmail: currentUser.email,
-            discordPseudo: userDiscordPseudo,
-            action: action,
-            details: details,
-            createdAt: new Date()
-        });
-    } catch (error) {
-        console.error('Erreur sauvegarde log:', error);
-    }
-}
-
-// Observer d'authentification
-setTimeout(() => {
-    if (elements.loadingScreen && !elements.loadingScreen.classList.contains('hidden')) {
-        showAuthScreen();
-    }
-}, 3000);
-
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        currentUser = user;
-        const savedPseudo = localStorage.getItem('discordPseudo');
-        if (savedPseudo) {
-            userDiscordPseudo = savedPseudo;
-        }
-        showMainPanel();
-    } else {
-        showAuthScreen();
-    }
-});
-
-// Event listeners
-if (elements.loginForm) {
-    elements.loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const discordPseudo = document.getElementById('loginDiscordPseudo').value;
-
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            userDiscordPseudo = discordPseudo;
-            localStorage.setItem('discordPseudo', discordPseudo);
-        } catch (error) {
-            showError(`Erreur de connexion: ${error.message}`);
-        }
-    });
-}
-
-if (elements.logoutBtn) {
-    elements.logoutBtn.addEventListener('click', async () => {
-        try {
-            await auth.signOut();
-            localStorage.removeItem('discordPseudo');
-            userDiscordPseudo = '';
-            currentUser = null;
-        } catch (error) {
-            console.error('Erreur déconnexion:', error);
-        }
-    });
-}
-
-elements.categorySelect.addEventListener('change', (e) => {
-    const categoryKey = e.target.value;
-    resetSelection();
-    
-    if (categoryKey === 'jeux') {
-        showView('games');
-    } else if (categoryKey) {
-        selectedCategory = categoryKey;
-        showWeekButtons(categoryKey, false);
-    }
-    updateBadges();
-});
-
-elements.gamesView.addEventListener('click', (e) => {
-    if (e.target.dataset.game) {
-        selectedGame = e.target.dataset.game;
-        selectedCategory = '';
-        showView('game-detail');
-        showWeekButtons(selectedGame, true);
-        resetSelection();
-        selectedGame = e.target.dataset.game;
-        updateBadges();
-    }
-});
-
-// Sélection de salon
-document.querySelectorAll('.channel-item').forEach(item => {
-    item.addEventListener('click', () => {
-        selectedChannel = item.dataset.channel;
-        selectedChannelName = item.dataset.name;
-        document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('selected'));
-        item.classList.add('selected');
-        
+        // Initialisation
         updateBadges();
         updateSendButton();
-    });
-});
 
-elements.sendBtn.addEventListener('click', sendToDiscord);
-
-elements.backBtn.addEventListener('click', () => {
-    if (currentView === 'game-detail') {
-        showView('games');
-        selectedGame = '';
-    } else if (currentView === 'games') {
-        showView('main');
-        elements.categorySelect.value = '';
-    }
-    resetSelection();
-});
-
-// Initialisation
-updateBadges();
-updateSendButton();
-
-console.log('🎉 Application RÉELLE prête !');
+        console.log('🎉 Godplace Panel avec Webhooks prêt !');
+        console.log('⚠️ N\'oubliez pas de configurer vos URLs de webhooks dans la variable WEBHOOKS !');
     </script>
 </body>
 </html>
