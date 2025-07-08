@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Godplace Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none !important; }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            gap: 8px;
+            text-align: center;
+            min-height: 48px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: white;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #d4af37;
+            border: 2px solid #d4af37;
+        }
+        
+        .btn-outline:hover:not(:disabled) {
+            background: #d4af37;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline.active {
+            background: #d4af37;
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #d4af37;
+            margin-bottom: 8px;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .webhook-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .webhook-item:hover {
+            border-color: #d4af37;
+            background: #fef3c7;
+            transform: translateY(-1px);
+        }
+        
+        .webhook-item.selected {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: white;
+            border-color: #d4af37;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-5 { grid-template-columns: repeat(5, 1fr); }
+        
+        @media (max-width: 768px) {
+            .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            color: #065f46;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #d4af37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border: 4px solid #d4af37;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .status-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .badge-inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .badge-active {
+            background: linear-gradient(135deg, #d4af37, #b8941f);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="max-w-6xl mx-auto p-6 space-y-8">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent mb-4">
+                🔥 Godplace Panel
+            </h1>
+            <p class="text-gray-600 text-lg">Envoi Discord</p>
+        </div>
+
+        <!-- Category Selection -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">1. Choisissez une catégorie</h2>
+                <p class="text-gray-600">Sélectionnez le contenu à envoyer</p>
+            </div>
+            <div class="card-content">
+                <select id="categorySelect" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none text-lg">
+                    <option value="">-- Sélectionnez une catégorie --</option>
+                    <option value="Bandeaux">Bandeaux</option>
+                    <option value="mondeEnDeclin">Le Monde en Déclin</option>
+                    <option value="gagneCoeurChrist">Gagne le cœur du Christ</option>
+                    <option value="loueAvecTonArt">Loue avec ton art</option>
+                    <option value="chaineSacree">Chaîne sacrée</option>
+                    <option value="savoirChretien">Savoir chrétien</option>
+                    <option value="jePrefere">Je préfère</option>
+                    <option value="jeDebats">Je débats</option>
+                    <option value="composeTonChant">Compose ton chant</option>
+                    <option value="priereEnChoeur">Prière en chœur</option>
+                    <option value="quiSuisJeBiblique">Qui suis-je biblique</option>
+                    <option value="comprendreApocalypse">Comprendre l'apocalypse</option>
+                    <option value="bibleIllustree">LA Bible illustrée</option>
+                    <option value="cinemaChretien">Cinéma Chrétien</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Week Selection -->
+        <div id="weekSection" class="card hidden">
+            <div class="card-header">
+                <h2 class="card-title">2. Choisissez une option</h2>
+                <p id="weekDescription" class="text-gray-600">Sélectionnez une option</p>
+            </div>
+            <div class="card-content">
+                <div id="weekButtons" class="grid grid-cols-5 gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Image Preview -->
+        <div id="previewSection" class="card hidden">
+            <div class="card-header">
+                <h2 class="card-title">👁️ 3. Aperçu</h2>
+                <p class="text-gray-600">Prévisualisation de l'image sélectionnée</p>
+            </div>
+            <div class="card-content">
+                <div class="text-center">
+                    <img id="previewImage" src="/placeholder.svg" alt="Aperçu" class="preview-image mx-auto">
+                </div>
+            </div>
+        </div>
+
+        <!-- Webhook Selection -->
+        <div id="webhookSection" class="card hidden">
+            <div class="card-header">
+                <h2 class="card-title">4. Choisissez un salon Discord</h2>
+                <p class="text-gray-600">Sélectionnez où envoyer le contenu</p>
+            </div>
+            <div class="card-content space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="webhookList">
+                    <!-- Les webhooks seront ajoutés ici -->
+                </div>
+                
+                <button id="sendBtn" class="btn btn-primary w-full text-lg py-4" disabled>
+                    📤 Envoyer via Webhook
+                </button>
+                
+                <div id="sendResult"></div>
+            </div>
+        </div>
+
+        <!-- Status Badges -->
+        <div class="status-badges">
+            <span id="categoryBadge" class="badge badge-inactive">
+                📁 Catégorie: Non sélectionnée
+            </span>
+            <span id="weekBadge" class="badge badge-inactive">
+                📋 Option: Non sélectionnée
+            </span>
+            <span id="webhookBadge" class="badge badge-inactive">
+                💬 Salon: Non sélectionné
+            </span>
+        </div>
+    </div>
+
+    <script>
+        // 🔥 CONFIGURATION DES WEBHOOKS DISCORD
+        const WEBHOOKS = {
+            'grille-lumiere': 'https://discord.com/api/webhooks/1389555542074200155/xsdZl4o4uCRaIuo7kYYrq51CpOu007lYRfxsln2wj8_ZMaSYYieI-KxQ0p2fGooD6wEF',
+            'eclaireurs': 'https://discord.com/api/webhooks/VOTRE_WEBHOOK_ID_2/VOTRE_WEBHOOK_TOKEN_2',
+            'entre-freres': 'https://discord.com/api/webhooks/1390687716953423922/UYUHKJz0l1VdvAEIHWT3XF7AdN4tx7KwELHUTXWxC9dfZBf5EgKFGIyj_y0snR35Am6p',
+            'je-prefere-g1': 'https://discord.com/api/webhooks/1390687684430659687/zqwZdEiDZtfn5yJC6SecDiwMsWXDYV2iGxRKCWoCI0AogoS32vLZNYri-GHFZQLPaz5Q',
+            'je-prefere-g2': 'https://discord.com/api/webhooks/1390687653652856974/NMC1uCF1yWOskomkdgGPkf5N9oIBhHR6axThPATUda1NTMClDMRUB8kIcCZ96oYp56vO',
+            'savoir-chretien-g1': 'https://discord.com/api/webhooks/1390688671866294292/UofgKcVzLPaHUQjqrvSmX5AVN1aOiTdt-tP2LJ0lxzUxLJsxcfwImx3XiXSpI9VkH2L_',
+            'savoir-chretien-g2': 'https://discord.com/api/webhooks/1390688856667459614/tUHIMEnzlOVks4BKX3gQaEuQRXr_H0pFEaLsCSEqPzwLIzIWM_vIs7kt2xKZBvmkguKt',
+            'savoir-chretien-g3': 'https://discord.com/api/webhooks/1390689081540743168/UuHPBI5d2G20nlgO-9tKM5SGM3hOyko4acMsxb31bXZXhUeyy89ttMYM_4D8p4OuxtX-',
+            'carnet-chretien': 'https://discord.com/api/webhooks/1390689233240457286/5RDH1JySZVUcSte5hKD5fCN0Mr7tpNtwLmzpkPcviNdfgxD6voIAKXl4CDch65ES8r7J',
+            'loue-avec-ton-art': 'https://discord.com/api/webhooks/1390689384562688060/f8Rxrp5HBlhUfuC1ihj5vHyi_q-0mdIEQoL-hawhPxYD-rfN5sCBpDoSpjQ7vOkz7djk',
+            'chaine-sacree': 'https://discord.com/api/webhooks/1390687232716967956/cFAMCnHpwdaPLZQJJ337NHu7P6M9lMwafyE7vTGbPtfLdeiH_A6EdYiOfK8X3BVnt17y',
+            'confesse-ton-peche': 'https://discord.com/api/webhooks/1391819411354157066/pBHfGL0-DdcjfekeSxSrDIZ9wquKJNoMhVqaY5XnxRFtk68-xuEU8NjlNMehbg2deXjf',
+            'salon-test': 'https://discord.com/api/webhooks/1392185129459384552/p_Vn2999SGYYkR8ckUaBpZj8sx5SI4R5RELaB1VsiyROWdq3NFqSFoLVdQ79dcaIj6T3'
+        };
+
+        // 📋 DONNÉES DES CATÉGORIES
+        const categories = {
+            Bandeaux: {
+                title: "Bandeaux",
+                weeks: {
+                    "À vos solutions": "https://media.discordapp.net/attachments/1365412596655853699/1365449720411062312/BANDEAUX_-_27.png",
+                    "Place au challenge": "https://media.discordapp.net/attachments/1365412596655853699/1365449778531537029/BANDEAUX_-_19.png",
+                    "Place à la victoire": "https://media.discordapp.net/attachments/1365412596655853699/1365449855157407754/BANDEAUX_-_29.png",
+                    "Team oui ou team non": "https://media.discordapp.net/attachments/1365412596655853699/1365449952163266712/BANDEAUX_-_31.png",
+                    "Préparez votre défense": "https://media.discordapp.net/attachments/1365412596655853699/1365450022350749717/BANDEAUX_-_23.png",
+                    "Face à face": "https://media.discordapp.net/attachments/1365412596655853699/1365450102835249172/BANDEAUX_-_33.png",
+                    "À vos votes": "https://media.discordapp.net/attachments/1365412596655853699/1365450176457609216/BANDEAUX_-_35.png",
+                    "Installez-vous": "https://media.discordapp.net/attachments/1365412596655853699/1365450239045144576/BANDEAUX_-_36.png",
+                    "On papote": "https://media.discordapp.net/attachments/1365412596655853699/1365450337854427267/BANDEAUX_-_37.png",
+                    "À vos Bibles": "https://media.discordapp.net/attachments/1365412596655853699/1365450502476795945/BANDEAUX_-_39.png",
+                    "Confesse ton péché": "https://cdn.discordapp.com/attachments/1365412596655853699/1365450773390950471/BANDEAUX_-_44.png",
+                    "Annonce des péchés": "https://cdn.discordapp.com/attachments/1365412596655853699/1365450855222083706/BANDEAUX_-_45.png",
+                    "Temps d'échange": "https://media.discordapp.net/attachments/1365412596655853699/1365450914202255370/BANDEAUX_-_56.png",
+                    "Place aux solutions": "https://cdn.discordapp.com/attachments/1365412596655853699/1365450980346429500/BANDEAUX_-_47.png"
+                }
+            },
+            mondeEnDeclin: {
+                title: "Le Monde en Déclin",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725262414876693/FICHES_SPECIFIQUES_PETIT_FORMAT_-_4.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725295369388042/FICHES_SPECIFIQUES_PETIT_FORMAT_-_5.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725348314222754/FICHES_SPECIFIQUES_PETIT_FORMAT_-_6.png"
+                }
+            },
+            gagneCoeurChrist: {
+                title: "Gagne le cœur du Christ",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725653625864284/FICHES_SPECIFIQUES_PETIT_FORMAT_-_13.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725697045434488/FICHES_SPECIFIQUES_PETIT_FORMAT_-_14.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725725654782062/FICHES_SPECIFIQUES_PETIT_FORMAT_-_15.png"
+                }
+            },
+            loueAvecTonArt: {
+                title: "Loue avec ton art",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725770085040218/FICHES_SPECIFIQUES_PETIT_FORMAT_-_16.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725825047068722/FICHES_SPECIFIQUES_PETIT_FORMAT_-_17.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365725866457567416/FICHES_SPECIFIQUES_PETIT_FORMAT_-_18.png"
+                }
+            },
+            chaineSacree: {
+                title: "Chaîne sacrée",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365725911411851344/FICHES_SPECIFIQUES_PETIT_FORMAT_-_19.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365725981528166450/FICHES_SPECIFIQUES_PETIT_FORMAT_-_20.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726016988465158/FICHES_SPECIFIQUES_PETIT_FORMAT_-_21.png"
+                }
+            },
+            savoirChretien: {
+                title: "Savoir chrétien",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726058002784767/FICHES_SPECIFIQUES_PETIT_FORMAT_-_22.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726094986149378/FICHES_SPECIFIQUES_PETIT_FORMAT_-_23.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726124882736641/FICHES_SPECIFIQUES_PETIT_FORMAT_-_24.png"
+                }
+            },
+            jePrefere: {
+                title: "Je préfère",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726155632450067/FICHES_SPECIFIQUES_PETIT_FORMAT_-_25.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726183903265536/FICHES_SPECIFIQUES_PETIT_FORMAT_-_26.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726215589114901/FICHES_SPECIFIQUES_PETIT_FORMAT_-_27.png"
+                }
+            },
+            jeDebats: {
+                title: "Je débats",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726250338652418/FICHES_SPECIFIQUES_PETIT_FORMAT_-_28.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726283172867072/FICHES_SPECIFIQUES_PETIT_FORMAT_-_29.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726313883936275/FICHES_SPECIFIQUES_PETIT_FORMAT_-_30.png"
+                }
+            },
+            composeTonChant: {
+                title: "Compose ton chant",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726345386018823/FICHES_SPECIFIQUES_PETIT_FORMAT_-_31.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726374519505411/FICHES_SPECIFIQUES_PETIT_FORMAT_-_32.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726412025523506/FICHES_SPECIFIQUES_PETIT_FORMAT_-_33.png"
+                }
+            },
+            priereEnChoeur: {
+                title: "Prière en chœur",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726445561549856/FICHES_SPECIFIQUES_PETIT_FORMAT_-_34.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726477503522300/FICHES_SPECIFIQUES_PETIT_FORMAT_-_35.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726504952314986/FICHES_SPECIFIQUES_PETIT_FORMAT_-_36.png"
+                }
+            },
+            quiSuisJeBiblique: {
+                title: "Qui suis-je biblique",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726536286921778/FICHES_SPECIFIQUES_PETIT_FORMAT_-_37.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726566499025000/FICHES_SPECIFIQUES_PETIT_FORMAT_-_38.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726598318859014/FICHES_SPECIFIQUES_PETIT_FORMAT_-_39.png"
+                }
+            },
+            comprendreApocalypse: {
+                title: "Comprendre l'apocalypse",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726630002579476/FICHES_SPECIFIQUES_PETIT_FORMAT_-_40.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726663403672848/FICHES_SPECIFIQUES_PETIT_FORMAT_-_41.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726700276018184/FICHES_SPECIFIQUES_PETIT_FORMAT_-_42.png"
+                }
+            },
+            bibleIllustree: {
+                title: "LA Bible illustrée",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726733322940924/FICHES_SPECIFIQUES_PETIT_FORMAT_-_43.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726763165978650/FICHES_SPECIFIQUES_PETIT_FORMAT_-_44.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726794945651970/FICHES_SPECIFIQUES_PETIT_FORMAT_-_45.png"
+                }
+            },
+            cinemaChretien: {
+                title: "Cinéma Chrétien",
+                weeks: {
+                    "Semaine 1": "https://media.discordapp.net/attachments/1365412596655853699/1365726824389902396/FICHES_SPECIFIQUES_PETIT_FORMAT_-_46.png",
+                    "Semaine 2": "https://media.discordapp.net/attachments/1365412596655853699/1365726860361834760/FICHES_SPECIFIQUES_PETIT_FORMAT_-_47.png",
+                    "Semaine 3": "https://media.discordapp.net/attachments/1365412596655853699/1365726891917857532/FICHES_SPECIFIQUES_PETIT_FORMAT_-_48.png"
+                }
+            }
+        };
+
+        // 🎯 LISTE DES SALONS AVEC WEBHOOKS
+        const webhookChannels = [
+            { id: 'grille-lumiere', name: 'Grille de lumière', emoji: '💡' },
+            { id: 'eclaireurs', name: 'Éclaireurs', emoji: '🔍' },
+            { id: 'entre-freres', name: 'Entre frères et sœurs en christ', emoji: '🤝' },
+            { id: 'je-prefere-g1', name: 'Je préfère G1', emoji: '⚖️' },
+            { id: 'je-prefere-g2', name: 'Je préfère G2', emoji: '⚖️' },
+            { id: 'savoir-chretien-g1', name: 'Savoir chrétien G1', emoji: '📚' },
+            { id: 'savoir-chretien-g2', name: 'Savoir chrétien G2', emoji: '📚' },
+            { id: 'savoir-chretien-g3', name: 'Savoir chrétien G3', emoji: '📚' },
+            { id: 'carnet-chretien', name: 'Carnet chrétien', emoji: '📝' },
+            { id: 'loue-avec-ton-art', name: 'Loue avec ton art', emoji: '🎨' },
+            { id: 'chaine-sacree', name: 'Chaîne sacrée', emoji: '⛓️' },
+            { id: 'confesse-ton-peche', name: 'Confesse ton péché', emoji: '🙏' },
+            { id: 'salon-test', name: 'Salon de test', emoji: '🧪' }
+        ];
+
+        // Variables globales
+        let selectedCategory = '';
+        let selectedWeek = '';
+        let selectedImage = '';
+        let selectedWebhook = '';
+        let selectedWebhookName = '';
+        let isSending = false;
+
+        // Éléments DOM
+        const elements = {
+            categorySelect: document.getElementById('categorySelect'),
+            weekSection: document.getElementById('weekSection'),
+            weekDescription: document.getElementById('weekDescription'),
+            weekButtons: document.getElementById('weekButtons'),
+            previewSection: document.getElementById('previewSection'),
+            previewImage: document.getElementById('previewImage'),
+            webhookSection: document.getElementById('webhookSection'),
+            webhookList: document.getElementById('webhookList'),
+            sendBtn: document.getElementById('sendBtn'),
+            sendResult: document.getElementById('sendResult'),
+            categoryBadge: document.getElementById('categoryBadge'),
+            weekBadge: document.getElementById('weekBadge'),
+            webhookBadge: document.getElementById('webhookBadge')
+        };
+
+        // 🎯 FONCTIONS UTILITAIRES
+        function showElement(element) {
+            if (element) element.classList.remove('hidden');
+        }
+
+        function hideElement(element) {
+            if (element) element.classList.add('hidden');
+        }
+
+        function updateBadges() {
+            const categoryTitle = selectedCategory ? categories[selectedCategory]?.title : 'Non sélectionnée';
+            elements.categoryBadge.textContent = `📁 Catégorie: ${categoryTitle}`;
+            elements.categoryBadge.className = `badge ${selectedCategory ? 'badge-active' : 'badge-inactive'}`;
+
+            elements.weekBadge.textContent = `📋 Option: ${selectedWeek || 'Non sélectionnée'}`;
+            elements.weekBadge.className = `badge ${selectedWeek ? 'badge-active' : 'badge-inactive'}`;
+
+            elements.webhookBadge.textContent = `💬 Salon: ${selectedWebhookName || 'Non sélectionné'}`;
+            elements.webhookBadge.className = `badge ${selectedWebhook ? 'badge-active' : 'badge-inactive'}`;
+        }
+
+        function updateSendButton() {
+            const canSend = selectedImage && selectedWebhook && !isSending;
+            elements.sendBtn.disabled = !canSend;
+            elements.sendBtn.innerHTML = isSending ? '<div class="loading"></div> Envoi en cours...' : '📤 Envoyer via Webhook';
+        }
+
+        function getGridClass(itemCount) {
+            if (itemCount >= 10) return 'grid-cols-5';
+            if (itemCount >= 6) return 'grid-cols-4';
+            if (itemCount >= 4) return 'grid-cols-3';
+            return 'grid-cols-2';
+        }
+
+        // 🎯 GESTION DES ÉVÉNEMENTS
+        elements.categorySelect.addEventListener('change', (e) => {
+            selectedCategory = e.target.value;
+            selectedWeek = '';
+            selectedImage = '';
+            selectedWebhook = '';
+            selectedWebhookName = '';
+
+            if (selectedCategory) {
+                showWeekButtons();
+                showElement(elements.weekSection);
+            } else {
+                hideElement(elements.weekSection);
+                hideElement(elements.previewSection);
+                hideElement(elements.webhookSection);
+            }
+
+            updateBadges();
+            updateSendButton();
+        });
+
+        function showWeekButtons() {
+            const data = categories[selectedCategory]?.weeks;
+            if (!data) return;
+
+            elements.weekButtons.innerHTML = '';
+            const itemCount = Object.keys(data).length;
+            elements.weekButtons.className = `grid ${getGridClass(itemCount)} gap-3`;
+            elements.weekDescription.textContent = `Sélectionnez une option pour ${categories[selectedCategory]?.title}`;
+
+            Object.keys(data).forEach(week => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline';
+                btn.style.minHeight = '60px';
+                btn.textContent = week;
+                btn.onclick = () => selectWeek(week, data[week]);
+                elements.weekButtons.appendChild(btn);
+            });
+        }
+
+        function selectWeek(week, imageUrl) {
+            selectedWeek = week;
+            selectedImage = imageUrl;
+
+            // Mettre à jour les boutons
+            elements.weekButtons.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === week) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Afficher l'aperçu
+            elements.previewImage.src = imageUrl;
+            elements.previewImage.onerror = function() {
+                this.src = '/placeholder.svg?height=300&width=600';
+                console.warn('Erreur de chargement de l\'image:', imageUrl);
+            };
+            showElement(elements.previewSection);
+
+            // Afficher les webhooks
+            showWebhooks();
+            showElement(elements.webhookSection);
+
+            updateBadges();
+            updateSendButton();
+        }
+
+        function showWebhooks() {
+            elements.webhookList.innerHTML = '';
+
+            webhookChannels.forEach(channel => {
+                const div = document.createElement('div');
+                div.className = 'webhook-item';
+                div.innerHTML = `
+                    <span class="mr-3 text-xl">${channel.emoji}</span>
+                    <span class="flex-1 font-medium">${channel.name}</span>
+                `;
+                div.onclick = () => selectWebhook(channel.id, channel.name);
+                elements.webhookList.appendChild(div);
+            });
+        }
+
+        function selectWebhook(webhookId, webhookName) {
+            selectedWebhook = webhookId;
+            selectedWebhookName = webhookName;
+
+            // Mettre à jour la sélection visuelle
+            elements.webhookList.querySelectorAll('.webhook-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            updateBadges();
+            updateSendButton();
+        }
+
+        // 🚀 FONCTION D'ENVOI VIA WEBHOOK
+        async function sendToWebhook() {
+            if (!selectedImage || !selectedWebhook) return;
+
+            isSending = true;
+            updateSendButton();
+            elements.sendResult.innerHTML = '';
+
+            try {
+                const webhookUrl = WEBHOOKS[selectedWebhook];
+                if (!webhookUrl || webhookUrl.includes('VOTRE_WEBHOOK')) {
+                    throw new Error('Webhook non configuré pour ce salon');
+                }
+
+                console.log('🚀 Envoi via webhook:', {
+                    webhook: selectedWebhook,
+                    name: selectedWebhookName,
+                    category: selectedCategory,
+                    week: selectedWeek,
+                    image: selectedImage
+                });
+
+                // Préparer le message
+                const message = {
+                    content: `**${categories[selectedCategory]?.title}** - ${selectedWeek}`,
+                    embeds: [{
+                        title: `${categories[selectedCategory]?.title} - ${selectedWeek}`,
+                        image: {
+                            url: selectedImage
+                        },
+                        color: 0xd4af37,
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+
+                // Envoyer via webhook
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+
+                if (response.ok) {
+                    elements.sendResult.innerHTML = `
+                        <div class="alert alert-success">
+                            ✅ Message envoyé avec succès dans "${selectedWebhookName}" !
+                        </div>
+                    `;
+                    console.log('✅ Envoi réussi !');
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(`Erreur webhook: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                elements.sendResult.innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ Erreur lors de l'envoi: ${error.message}
+                        <br><br>
+                        <strong>💡 Solutions :</strong><br>
+                        1. Vérifiez que le webhook est correctement configuré<br>
+                        2. Vérifiez que l'URL du webhook est valide<br>
+                        3. Le webhook a peut-être été supprimé ou désactivé
+                    </div>
+                `;
+            } finally {
+                isSending = false;
+                updateSendButton();
+            }
+        }
+
+        // Event listener pour le bouton d'envoi
+        elements.sendBtn.addEventListener('click', sendToWebhook);
+
+        // Initialisation
+        updateBadges();
+        updateSendButton();
+
+        console.log('🎉 Godplace Panel avec Webhooks prêt !');
+        console.log('⚠️ N\'oubliez pas de configurer vos URLs de webhooks dans la variable WEBHOOKS !');
+    </script>
+</body>
+</html>
